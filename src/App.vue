@@ -24,18 +24,63 @@
         </div>
       </div>
       
-      <div class="sidebar-menu">
-        <div class="sidebar-item" :class="{ active: activeTab === 'mikrotik' }" @click="activeTab = 'mikrotik'">
-          <span>Mikrotik</span>
+      <div class="sidebar-menu" style="overflow-y: auto;">
+        <!-- RINGKASAN UTAMA -->
+        <div class="sidebar-section-title">
+          <span>RINGKASAN UTAMA</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
         </div>
-        <div class="sidebar-item">
-          <span>Vouchers</span>
+        <div class="sidebar-item" :class="{ active: activeTab === 'dashboard' }" @click="activeTab = 'dashboard'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          <span>Dashboard</span>
+        </div>
+        <div class="sidebar-item" :class="{ active: activeTab === 'monitoring' }" @click="activeTab = 'monitoring'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+          <span>Realtime Monitoring</span>
+        </div>
+        <div class="sidebar-item" :class="{ active: activeTab === 'map' }" @click="activeTab = 'map'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon><line x1="9" y1="3" x2="9" y2="18"></line><line x1="15" y1="6" x2="15" y2="21"></line></svg>
+          <span>Peta Jaringan</span>
+        </div>
+
+        <!-- CRM & DUKUNGAN -->
+        <div class="sidebar-section-title" style="margin-top: 12px;">
+          <span>CRM & DUKUNGAN</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </div>
+        <div class="sidebar-item" :class="{ active: activeTab === 'invoice' }" @click="activeTab = 'invoice'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+          <span>Invoice Tagihan</span>
+        </div>
+        <div class="sidebar-item" :class="{ active: activeTab === 'packages' }" @click="activeTab = 'packages'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+          <span>Paket Internet</span>
+        </div>
+        <div class="sidebar-item" :class="{ active: activeTab === 'vouchers' }" @click="activeTab = 'vouchers'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2" ry="2"></rect><line x1="8" y1="6" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="18"></line></svg>
+          <span>Voucher Hotspot</span>
+        </div>
+
+        <!-- LAYANAN JARINGAN -->
+        <div class="sidebar-section-title" style="margin-top: 12px;">
+          <span>LAYANAN JARINGAN</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </div>
+        <div class="sidebar-item" :class="{ active: activeTab === 'mikrotik' }" @click="activeTab = 'mikrotik'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+          <span>Mikrotik Router</span>
         </div>
         <div class="sidebar-item" :class="{ active: activeTab === 'pppoe' }" @click="activeTab = 'pppoe'">
-          <span>PPPoE Users</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+          <span>PPPoE Management</span>
         </div>
-        <div class="sidebar-item">
-          <span>Settings</span>
+        <div class="sidebar-item" :class="{ active: activeTab === 'hotspot' }" @click="activeTab = 'hotspot'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
+          <span>Hotspot Management</span>
+        </div>
+        <div class="sidebar-item" :class="{ active: activeTab === 'queue' }" @click="activeTab = 'queue'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+          <span>Queue Management</span>
         </div>
       </div>
 
