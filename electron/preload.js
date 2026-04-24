@@ -33,6 +33,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   updatePppoeSecret: (id, secretId, data) => ipcRenderer.invoke('mikrotik:update-pppoe-secret', id, secretId, data),
   deletePppoeSecret: (id, secretId) => ipcRenderer.invoke('mikrotik:delete-pppoe-secret', id, secretId),
 
+  addPppoeProfile: (id, data) => ipcRenderer.invoke('mikrotik:add-pppoe-profile', id, data),
+  updatePppoeProfile: (id, profileId, data) => ipcRenderer.invoke('mikrotik:update-pppoe-profile', id, profileId, data),
+  deletePppoeProfile: (id, profileId) => ipcRenderer.invoke('mikrotik:delete-pppoe-profile', id, profileId),
+
   // Cleanup listeners
   removeAllListeners: (channel) => {
     ipcRenderer.removeAllListeners(channel);

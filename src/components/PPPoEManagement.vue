@@ -32,11 +32,18 @@
       
       <div class="toolbar-right no-print">
         <button 
-          v-if="selectedRouterId" 
+          v-if="selectedRouterId && currentSubTab === 'secrets'" 
           class="btn btn-sm btn-primary" 
           @click="openForm()"
         >
           + Tambah User PPPoE
+        </button>
+        <button 
+          v-if="selectedRouterId && currentSubTab === 'profiles'" 
+          class="btn btn-sm" style="background: #5b4cf5; color: white;" 
+          @click="openProfileForm()"
+        >
+          + NEW PROFILE
         </button>
         <button 
           v-if="selectedRouterId && currentSubTab === 'secrets'" 
@@ -61,14 +68,24 @@
           :class="{ active: currentSubTab === 'secrets' }" 
           @click="currentSubTab = 'secrets'"
         >
-          Daftar User ({{ secrets.length }})
+          <svg width="14" height="14" style="margin-right: 4px; vertical-align: middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          ALL SECRETS
         </div>
         <div 
           class="sub-tab" 
           :class="{ active: currentSubTab === 'active' }" 
           @click="currentSubTab = 'active'"
         >
-          Monitoring Aktif ({{ activeUsers.length }})
+          <svg width="14" height="14" style="margin-right: 4px; vertical-align: middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+          ACTIVE CONNECTION
+        </div>
+        <div 
+          class="sub-tab" 
+          :class="{ active: currentSubTab === 'profiles' }" 
+          @click="currentSubTab = 'profiles'"
+        >
+          <svg width="14" height="14" style="margin-right: 4px; vertical-align: middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+          SERVICE PROFILES
         </div>
       </div>
 
@@ -152,9 +169,40 @@
           </table>
         </div>
       </div>
+      <!-- Tab: Service Profiles -->
+      <div v-else-if="currentSubTab === 'profiles'" class="tab-content">
+        <div class="table-container" style="border-radius: var(--radius-md); overflow: hidden;">
+          <table class="data-table">
+            <thead style="background: var(--bg-secondary);">
+              <tr>
+                <th style="color: var(--text-muted); font-size: 11px; text-transform: uppercase;">PROFILE NAME</th>
+                <th style="color: var(--text-muted); font-size: 11px; text-transform: uppercase;">RATE LIMIT</th>
+                <th style="color: var(--text-muted); font-size: 11px; text-transform: uppercase;">PRICE (BILLING)</th>
+                <th style="color: var(--text-muted); font-size: 11px; text-transform: uppercase; text-align: right;">ACTION</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="profiles.length === 0">
+                <td colspan="4" class="text-center" style="padding: 30px;">Belum ada Service Profile.</td>
+              </tr>
+              <tr v-for="prof in profiles" :key="prof['.id']">
+                <td><strong>{{ prof.name }}</strong></td>
+                <td style="font-family: monospace;">{{ prof['rate-limit'] || 'Unlimited' }}</td>
+                <td style="font-weight: 600; color: var(--accent-blue);">
+                  Rp {{ prof.price ? prof.price.toLocaleString() : '0' }}
+                </td>
+                <td style="text-align: right;">
+                  <button class="btn btn-ghost btn-sm" @click="openProfileForm(prof)">Edit</button>
+                  <button class="btn btn-ghost btn-sm" style="color: var(--status-offline);" @click="deleteProfile(prof['.id'], prof.name)">Hapus</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
-    <!-- PPPoE Form Modal -->
+    <!-- PPPoE Secret Form Modal -->
     <PPPoEForm
       v-if="showForm"
       :secret="editingSecret"
@@ -163,16 +211,26 @@
       @save="saveSecret"
       @cancel="showForm = false"
     />
+    <!-- Profile Form Modal -->
+    <PPPoEProfileForm
+      v-if="showProfileForm"
+      :profile="editingProfile"
+      :is-editing="isProfileEditing"
+      @save="saveProfile"
+      @cancel="showProfileForm = false"
+    />
   </div>
 </template>
 
 <script>
 import PPPoEForm from './PPPoEForm.vue';
+import PPPoEProfileForm from './PPPoEProfileForm.vue';
 
 export default {
   name: 'PPPoEManagement',
   components: {
-    PPPoEForm
+    PPPoEForm,
+    PPPoEProfileForm
   },
   props: {
     mikrotiks: {
@@ -191,7 +249,11 @@ export default {
       
       showForm: false,
       isEditing: false,
-      editingSecret: null
+      editingSecret: null,
+
+      showProfileForm: false,
+      isProfileEditing: false,
+      editingProfile: null
     };
   },
   computed: {
@@ -233,6 +295,9 @@ export default {
         } else if (this.currentSubTab === 'active') {
           const actRes = await window.electronAPI.getActivePppoe(this.selectedRouterId);
           if (actRes.success) this.activeUsers = actRes.data;
+        } else if (this.currentSubTab === 'profiles') {
+          const profRes = await window.electronAPI.getPppoeProfiles(this.selectedRouterId);
+          if (profRes.success) this.profiles = profRes.data;
         }
       } catch (err) {
         console.error('Failed to load PPPoE data:', err);
@@ -290,6 +355,57 @@ export default {
         }
       } catch (err) {
         console.error('Delete error:', err);
+      }
+    },
+
+    openProfileForm(profile = null) {
+      if (profile) {
+        this.editingProfile = { ...profile };
+        this.isProfileEditing = true;
+      } else {
+        this.editingProfile = null;
+        this.isProfileEditing = false;
+      }
+      this.showProfileForm = true;
+    },
+
+    async saveProfile(data) {
+      if (!window.electronAPI) return;
+      this.loading = true;
+      try {
+        let res;
+        if (this.isProfileEditing) {
+          res = await window.electronAPI.updatePppoeProfile(this.selectedRouterId, this.editingProfile['.id'], data);
+        } else {
+          res = await window.electronAPI.addPppoeProfile(this.selectedRouterId, data);
+        }
+
+        if (res.success) {
+          this.$emit('add-toast', 'success', `Profile PPPoE ${data.name} berhasil disimpan`);
+          this.showProfileForm = false;
+          this.loadData();
+        } else {
+          this.$emit('add-toast', 'error', res.error || 'Gagal menyimpan profile');
+        }
+      } catch (err) {
+        console.error('Save Profile error:', err);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async deleteProfile(id, name) {
+      if (!confirm(`Hapus profile ${name}? Pastikan tidak ada user/secret yang masih menggunakannya!`)) return;
+      try {
+        const res = await window.electronAPI.deletePppoeProfile(this.selectedRouterId, id);
+        if (res.success) {
+          this.$emit('add-toast', 'success', `Profile ${name} dihapus`);
+          this.loadData();
+        } else {
+          this.$emit('add-toast', 'error', res.error || 'Gagal menghapus profile');
+        }
+      } catch (err) {
+        console.error('Delete Profile error:', err);
       }
     },
 

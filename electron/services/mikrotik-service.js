@@ -384,6 +384,33 @@ class MikrotikServiceManager extends EventEmitter {
     if (!client) throw new Error('Not connected'); 
     return client.write('/ppp/secret/remove', { '.id': secretId }); 
   }
+
+  // Profile CRUD
+  async addPppoeProfile(id, data) {
+    const client = this.getClient(id);
+    if (!client) throw new Error('Not connected');
+    const params = { name: data.name };
+    if (data.rate_limit) params['rate-limit'] = data.rate_limit;
+    if (data.local_address) params['local-address'] = data.local_address;
+    if (data.remote_address) params['remote-address'] = data.remote_address;
+    return client.write('/ppp/profile/add', params);
+  }
+
+  async updatePppoeProfile(id, profileId, data) {
+    const client = this.getClient(id);
+    if (!client) throw new Error('Not connected');
+    const params = { '.id': profileId, name: data.name };
+    if (data.rate_limit !== undefined) params['rate-limit'] = data.rate_limit;
+    if (data.local_address !== undefined) params['local-address'] = data.local_address;
+    if (data.remote_address !== undefined) params['remote-address'] = data.remote_address;
+    return client.write('/ppp/profile/set', params);
+  }
+
+  async deletePppoeProfile(id, profileId) {
+    const client = this.getClient(id);
+    if (!client) throw new Error('Not connected');
+    return client.write('/ppp/profile/remove', { '.id': profileId });
+  }
 }
 
 // Export a singleton instance

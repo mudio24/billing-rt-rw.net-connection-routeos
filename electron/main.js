@@ -217,7 +217,51 @@ ipcMain.handle('mikrotik:get-pppoe-secrets', async (event, id) => {
 ipcMain.handle('mikrotik:get-pppoe-profiles', async (event, id) => {
   try {
     const data = await mikrotikService.getPppoeProfiles(id);
-    return { success: true, data };
+    const dbProfiles = await dbService.getPppoeProfilesFromDb(id);
+    
+    // Map existing prices into mikrotik data
+    const enrichedData = data.map(p => {
+      const dbInfo = dbProfiles[p.name] || {};
+      return {
+        ...p,
+        price: dbInfo.price || 0,
+        limit_uptime: dbInfo.limit_uptime || '',
+        validity_days: dbInfo.validity_days || 0
+      };
+    });
+
+    return { success: true, data: enrichedData };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+// Profile CRUD Handlers
+ipcMain.handle('mikrotik:add-pppoe-profile', async (event, id, data) => {
+  try {
+    await mikrotikService.addPppoeProfile(id, data);
+    await dbService.savePppoeProfileToDb(id, data.name, data);
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('mikrotik:update-pppoe-profile', async (event, id, profileId, data) => {
+  try {
+    await mikrotikService.updatePppoeProfile(id, profileId, data);
+    // Sync price metadata to DB
+    await dbService.savePppoeProfileToDb(id, data.name, data);
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('mikrotik:delete-pppoe-profile', async (event, id, profileId) => {
+  try {
+    await mikrotikService.deletePppoeProfile(id, profileId);
+    return { success: true };
   } catch (err) {
     return { success: false, error: err.message };
   }

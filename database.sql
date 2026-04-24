@@ -62,6 +62,24 @@ CREATE TABLE IF NOT EXISTS `router_connections` (
   CONSTRAINT `fk_router_connections` FOREIGN KEY (`router_id`) REFERENCES `routers` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pppoe_profiles`
+--
+
+CREATE TABLE IF NOT EXISTS `pppoe_profiles` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `router_id` int(11) NOT NULL,
+  `profile_name` varchar(255) NOT NULL,
+  `price` int(11) DEFAULT 0,
+  `limit_uptime` varchar(50) DEFAULT '',
+  `validity_days` int(11) DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_router_profile` (`router_id`, `profile_name`),
+  CONSTRAINT `fk_profile_router` FOREIGN KEY (`router_id`) REFERENCES `routers` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

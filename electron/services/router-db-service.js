@@ -339,6 +339,58 @@ async function closeDatabase() {
   }
 }
 
+// ==========================================
+// PPPoE PROFILES DB METHODS
+// ==========================================
+
+async function getPppoeProfilesFromDb(routerId) {
+  try {
+    const [rows] = await pool.query(
+      `SELECT profile_name, price, limit_uptime, validity_days 
+       FROM pppoe_profiles 
+       WHERE router_id = ?`,
+      [routerId]
+    );
+    // Return mapping format to easily merge in main.js
+    const mapping = {};
+    rows.forEach(r => {
+      mapping[r.profile_name] = {
+        price: r.price,
+        limit_uptime: r.limit_uptime,
+        validity_days: r.validity_days
+      };
+    });
+    return mapping;
+  } catch (err) {
+    console.error('[DB] Error fetching PPPoE Profiles:', err.message);
+    return {};
+  }
+}
+
+async function savePppoeProfileToDb(routerId, profileName, data) {
+  try {
+    await pool.query(
+      `INSERT INTO pppoe_profiles (router_id, profile_name, price, limit_uptime, validity_days) 
+       VALUES (?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE 
+       price = VALUES(price), 
+       limit_uptime = VALUES(limit_uptime), 
+       validity_days = VALUES(validity_days)`,
+      [
+        routerId, 
+        profileName, 
+        data.price || 0, 
+        data.limit_uptime || '', 
+        data.validity_days || 0
+      ]
+    );
+    return true;
+  } catch (err) {
+    console.error('[DB] Error saving PPPoE Profile to DB:', err.message);
+    return false;
+  }
+}
+
 module.exports = {
   initDatabase,
   addRouter,
@@ -350,5 +402,7 @@ module.exports = {
   encryptPassword,
   decryptPassword,
   getAllRouterConfigs,
-  closeDatabase
+  closeDatabase,
+  getPppoeProfilesFromDb,
+  savePppoeProfileToDb
 };
