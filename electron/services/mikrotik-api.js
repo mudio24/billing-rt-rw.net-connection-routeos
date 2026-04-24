@@ -233,6 +233,7 @@ class MikrotikAPI {
         this.socket.removeListener('timeout', onTimeout);
         this.socket.removeListener('error', onError);
         this.socket.setTimeout(0); // Remove timeout after connect
+        this.socket.setKeepAlive(true, 10000); // Enable keep-alive
 
         try {
           await this._login();

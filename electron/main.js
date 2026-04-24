@@ -10,6 +10,20 @@ require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') });
 const dbService = require('./services/router-db-service');
 const mikrotikService = require('./services/mikrotik-service');
 
+// Listen for connection drops (Heartbeat failure or TCP Socket close)
+mikrotikService.on('connection-lost', async (data) => {
+  console.log(`[App] Event: connection-lost for router ${data.routerId} - ${data.message}`);
+  await dbService.updateConnectionStatus(data.routerId, false, data.message);
+  
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('router:connection-update', {
+      routerId: data.routerId,
+      status: 'offline',
+      message: data.message
+    });
+  }
+});
+
 let mainWindow = null;
 
 /**
