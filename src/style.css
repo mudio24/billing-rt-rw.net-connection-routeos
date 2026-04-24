@@ -67,6 +67,41 @@
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
+[data-theme="light"] {
+  /* Colors - Light Theme Palette */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.9);
+  --bg-card-hover: #ffffff;
+  --bg-glass: rgba(0, 0, 0, 0.04);
+  --bg-glass-hover: rgba(0, 0, 0, 0.08);
+  --bg-input: #f1f5f9;
+  --bg-input-focus: #ffffff;
+
+  /* Text Colors */
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-accent: #2563eb;
+
+  /* Borders */
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --border-card: rgba(0, 0, 0, 0.1);
+  --border-input: rgba(0, 0, 0, 0.15);
+  --border-input-focus: rgba(59, 130, 246, 0.5);
+
+  /* Shadows */
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover: 0 8px 30px rgba(0, 0, 0, 0.12);
+  --shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.15);
+  --shadow-button: 0 2px 8px rgba(59, 130, 246, 0.25);
+  
+  /* Status modifications for light mode */
+  --status-connected-bg: rgba(34, 197, 94, 0.15);
+  --status-offline-bg: rgba(239, 68, 68, 0.15);
+  --status-loading-bg: rgba(245, 158, 11, 0.15);
+}
+
 /* === Global Reset === */
 *, *::before, *::after {
   box-sizing: border-box;

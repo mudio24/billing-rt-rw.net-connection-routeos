@@ -57,7 +57,10 @@
         <div class="app-header-left">
           <div class="toolbar-title">Mikrotik Management List</div>
         </div>
-        <div class="header-actions">
+        <div class="header-actions" style="display: flex; gap: 16px; align-items: center;">
+          <button class="btn btn-sm btn-ghost" @click="toggleTheme">
+            {{ isLightMode ? 'Dark Mode' : 'Light Mode' }}
+          </button>
           <div class="header-stats">
             <div class="header-stat">
               <span class="stat-dot connected"></span>
@@ -143,7 +146,8 @@ export default {
       isDeleting: false,
       toasts: [],
       toastId: 0,
-      searchQuery: ''
+      searchQuery: '',
+      isLightMode: false
     };
   },
   computed: {
@@ -155,6 +159,13 @@ export default {
     }
   },
   async mounted() {
+    // Initialize Theme
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+      this.isLightMode = true;
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+
     await this.loadMikrotiks();
 
     // Listen for auto-connect results from Electron main process
@@ -178,6 +189,20 @@ export default {
     }
   },
   methods: {
+    // ==================
+    // Theme Toggle
+    // ==================
+    toggleTheme() {
+      this.isLightMode = !this.isLightMode;
+      if (this.isLightMode) {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'dark');
+      }
+    },
+
     // ==================
     // Data Loading
     // ==================
