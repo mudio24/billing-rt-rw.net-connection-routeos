@@ -354,6 +354,12 @@ class MikrotikServiceManager extends EventEmitter {
     if (!client) throw new Error('Not connected'); 
     return client.write('/ppp/active/print'); 
   }
+
+  async getIpPools(id) {
+    const client = this.getClient(id);
+    if (!client) throw new Error('Not connected');
+    return client.write('/ip/pool/print');
+  }
   
   async addPppoeSecret(id, data) { 
     const client = this.getClient(id); 

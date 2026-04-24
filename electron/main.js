@@ -236,6 +236,15 @@ ipcMain.handle('mikrotik:get-pppoe-profiles', async (event, id) => {
   }
 });
 
+ipcMain.handle('mikrotik:get-ip-pools', async (event, id) => {
+  try {
+    const data = await mikrotikService.getIpPools(id);
+    return { success: true, data };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
 // Profile CRUD Handlers
 ipcMain.handle('mikrotik:add-pppoe-profile', async (event, id, data) => {
   try {

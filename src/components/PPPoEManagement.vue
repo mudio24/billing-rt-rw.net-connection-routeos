@@ -211,11 +211,11 @@
       @save="saveSecret"
       @cancel="showForm = false"
     />
-    <!-- Profile Form Modal -->
     <PPPoEProfileForm
       v-if="showProfileForm"
       :profile="editingProfile"
       :is-editing="isProfileEditing"
+      :ip-pools="ipPools"
       @save="saveProfile"
       @cancel="showProfileForm = false"
     />
@@ -246,6 +246,7 @@ export default {
       secrets: [],
       activeUsers: [],
       profiles: [],
+      ipPools: [],
       
       showForm: false,
       isEditing: false,
@@ -298,6 +299,9 @@ export default {
         } else if (this.currentSubTab === 'profiles') {
           const profRes = await window.electronAPI.getPppoeProfiles(this.selectedRouterId);
           if (profRes.success) this.profiles = profRes.data;
+          
+          const poolRes = await window.electronAPI.getIpPools(this.selectedRouterId);
+          if (poolRes.success) this.ipPools = poolRes.data.map(p => p.name);
         }
       } catch (err) {
         console.error('Failed to load PPPoE data:', err);

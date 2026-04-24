@@ -58,6 +58,11 @@
             </div>
           </div>
 
+          <!-- Datalist for IP Pools -->
+          <datalist id="ip-pools-list">
+            <option v-for="pool in ipPools" :key="pool" :value="pool"></option>
+          </datalist>
+
           <!-- Grid: Local Address & Remote Address -->
           <div class="form-grid">
             <div class="form-group">
@@ -67,6 +72,7 @@
                 id="local_address" 
                 v-model="form.local_address" 
                 class="form-control" 
+                list="ip-pools-list"
                 placeholder="IP or Pool Name"
                 :disabled="loading"
               >
@@ -78,6 +84,7 @@
                 id="remote_address" 
                 v-model="form.remote_address" 
                 class="form-control" 
+                list="ip-pools-list"
                 placeholder="IP or Pool Name"
                 :disabled="loading"
               >
@@ -135,6 +142,10 @@ export default {
     isEditing: {
       type: Boolean,
       default: false
+    },
+    ipPools: {
+      type: Array,
+      default: () => []
     }
   },
   data() {
