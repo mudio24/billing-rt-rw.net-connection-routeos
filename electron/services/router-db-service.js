@@ -1,12 +1,11 @@
 /**
- * Router Database Service
+ * Router Database Service (MySQL)
  * Handles all CRUD operations for routers and connection status
- * Uses better-sqlite3 for synchronous, reliable database operations
+ * Uses mysql2 for asynchronous database operations
  */
 
-const Database = require('better-sqlite3');
+const mysql = require('mysql2/promise');
 const crypto = require('crypto');
-const path = require('path');
 require('dotenv').config();
 
 const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'mikrotik-manager-secret-key-2026';
@@ -18,60 +17,70 @@ function getKey() {
   return crypto.createHash('sha256').update(ENCRYPTION_KEY).digest();
 }
 
-let db = null;
+let pool = null;
 
 /**
- * Initialize the database and create tables if they don't exist
+ * Initialize the database connection pool
  */
-function initDatabase(dbPath) {
-  const resolvedPath = dbPath || process.env.DB_PATH || './data/app.db';
-  const fullPath = path.resolve(resolvedPath);
+async function initDatabase() {
+  try {
+    // First connect without database to create it if not exists
+    const connection = await mysql.createConnection({
+      host: process.env.DB_HOST || 'localhost',
+      user: process.env.DB_USER || 'root',
+      password: process.env.DB_PASS || ''
+    });
 
-  // Ensure directory exists
-  const dir = path.dirname(fullPath);
-  const fs = require('fs');
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+    const dbName = process.env.DB_NAME || 'mikrotik_manager';
+    await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci`);
+    await connection.end();
+
+    // Create the connection pool
+    pool = mysql.createPool({
+      host: process.env.DB_HOST || 'localhost',
+      user: process.env.DB_USER || 'root',
+      password: process.env.DB_PASS || '',
+      database: dbName,
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0
+    });
+
+    // Create tables if they don't exist
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS routers (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        ip_address VARCHAR(100) NOT NULL UNIQUE,
+        mac_address VARCHAR(100),
+        api_port INT DEFAULT 8728,
+        username VARCHAR(255) NOT NULL,
+        password VARCHAR(500) NOT NULL DEFAULT '',
+        description TEXT,
+        is_active BOOLEAN DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS router_connections (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        router_id INT NOT NULL,
+        is_connected BOOLEAN DEFAULT 0,
+        last_connected DATETIME,
+        last_disconnected DATETIME,
+        error_message TEXT,
+        FOREIGN KEY (router_id) REFERENCES routers(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
+    console.log('[DB] MySQL Database initialized:', dbName);
+    return true;
+  } catch (err) {
+    console.error('[DB] Failed to initialize MySQL:', err.message);
+    throw err;
   }
-
-  db = new Database(fullPath);
-
-  // Enable WAL mode for better performance
-  db.pragma('journal_mode = WAL');
-  db.pragma('foreign_keys = ON');
-
-  // Create routers table
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS routers (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      ip_address TEXT NOT NULL UNIQUE,
-      mac_address TEXT,
-      api_port INTEGER DEFAULT 8728,
-      username TEXT NOT NULL,
-      password TEXT NOT NULL DEFAULT '',
-      description TEXT,
-      is_active BOOLEAN DEFAULT 1,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  // Create router_connections table
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS router_connections (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      router_id INTEGER NOT NULL,
-      is_connected BOOLEAN DEFAULT 0,
-      last_connected DATETIME,
-      last_disconnected DATETIME,
-      error_message TEXT,
-      FOREIGN KEY (router_id) REFERENCES routers(id) ON DELETE CASCADE
-    )
-  `);
-
-  console.log('[DB] Database initialized at:', fullPath);
-  return db;
 }
 
 /**
@@ -108,16 +117,14 @@ function decryptPassword(encryptedPassword) {
 /**
  * Add a new router
  */
-function addRouter(data) {
+async function addRouter(data) {
   try {
     const encryptedPassword = data.password ? encryptPassword(data.password) : encryptPassword('');
 
-    const stmt = db.prepare(`
+    const [result] = await pool.query(`
       INSERT INTO routers (name, ip_address, mac_address, api_port, username, password, description)
       VALUES (?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    const result = stmt.run(
+    `, [
       data.name,
       data.ip_address,
       data.mac_address || null,
@@ -125,20 +132,19 @@ function addRouter(data) {
       data.username,
       encryptedPassword,
       data.description || null
-    );
+    ]);
 
     // Create connection record
-    const connStmt = db.prepare(`
+    await pool.query(`
       INSERT INTO router_connections (router_id, is_connected)
       VALUES (?, 0)
-    `);
-    connStmt.run(result.lastInsertRowid);
+    `, [result.insertId]);
 
-    console.log('[DB] Router added:', data.name, '(ID:', result.lastInsertRowid, ')');
-    return { success: true, id: result.lastInsertRowid };
+    console.log('[DB] Router added:', data.name, '(ID:', result.insertId, ')');
+    return { success: true, id: result.insertId };
   } catch (err) {
     console.error('[DB] Error adding router:', err.message);
-    if (err.message.includes('UNIQUE constraint failed')) {
+    if (err.code === 'ER_DUP_ENTRY') {
       return { success: false, error: 'IP address sudah terdaftar di database' };
     }
     return { success: false, error: err.message };
@@ -148,9 +154,9 @@ function addRouter(data) {
 /**
  * Get all active routers with connection status
  */
-function getAllRouters() {
+async function getAllRouters() {
   try {
-    const stmt = db.prepare(`
+    const [routers] = await pool.query(`
       SELECT r.*, 
              rc.is_connected, 
              rc.last_connected, 
@@ -161,8 +167,6 @@ function getAllRouters() {
       WHERE r.is_active = 1
       ORDER BY r.created_at DESC
     `);
-
-    const routers = stmt.all();
 
     // Strip password from results (never send to frontend)
     return routers.map(r => ({
@@ -179,9 +183,9 @@ function getAllRouters() {
 /**
  * Get a single router by ID (with decrypted password for internal use)
  */
-function getRouterById(id, includePassword = false) {
+async function getRouterById(id, includePassword = false) {
   try {
-    const stmt = db.prepare(`
+    const [rows] = await pool.query(`
       SELECT r.*, 
              rc.is_connected, 
              rc.last_connected, 
@@ -190,10 +194,10 @@ function getRouterById(id, includePassword = false) {
       FROM routers r
       LEFT JOIN router_connections rc ON r.id = rc.router_id
       WHERE r.id = ? AND r.is_active = 1
-    `);
+    `, [id]);
 
-    const router = stmt.get(id);
-    if (!router) return null;
+    if (rows.length === 0) return null;
+    const router = rows[0];
 
     if (includePassword) {
       router.decryptedPassword = decryptPassword(router.password);
@@ -211,7 +215,7 @@ function getRouterById(id, includePassword = false) {
 /**
  * Update router
  */
-function updateRouter(id, data) {
+async function updateRouter(id, data) {
   try {
     let query, params;
 
@@ -220,7 +224,7 @@ function updateRouter(id, data) {
       const encryptedPassword = encryptPassword(data.password);
       query = `
         UPDATE routers 
-        SET name = ?, ip_address = ?, mac_address = ?, api_port = ?, username = ?, password = ?, description = ?, updated_at = CURRENT_TIMESTAMP
+        SET name = ?, ip_address = ?, mac_address = ?, api_port = ?, username = ?, password = ?, description = ?
         WHERE id = ? AND is_active = 1
       `;
       params = [data.name, data.ip_address, data.mac_address || null, data.api_port || 8728, data.username, encryptedPassword, data.description || null, id];
@@ -228,16 +232,15 @@ function updateRouter(id, data) {
       // Password not changed
       query = `
         UPDATE routers 
-        SET name = ?, ip_address = ?, mac_address = ?, api_port = ?, username = ?, description = ?, updated_at = CURRENT_TIMESTAMP
+        SET name = ?, ip_address = ?, mac_address = ?, api_port = ?, username = ?, description = ?
         WHERE id = ? AND is_active = 1
       `;
       params = [data.name, data.ip_address, data.mac_address || null, data.api_port || 8728, data.username, data.description || null, id];
     }
 
-    const stmt = db.prepare(query);
-    const result = stmt.run(...params);
+    const [result] = await pool.query(query, params);
 
-    if (result.changes === 0) {
+    if (result.affectedRows === 0) {
       return { success: false, error: 'Router tidak ditemukan' };
     }
 
@@ -245,7 +248,7 @@ function updateRouter(id, data) {
     return { success: true };
   } catch (err) {
     console.error('[DB] Error updating router:', err.message);
-    if (err.message.includes('UNIQUE constraint failed')) {
+    if (err.code === 'ER_DUP_ENTRY') {
       return { success: false, error: 'IP address sudah digunakan router lain' };
     }
     return { success: false, error: err.message };
@@ -255,14 +258,13 @@ function updateRouter(id, data) {
 /**
  * Soft delete router (set is_active = 0)
  */
-function deleteRouter(id) {
+async function deleteRouter(id) {
   try {
-    const stmt = db.prepare(`
-      UPDATE routers SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?
-    `);
-    const result = stmt.run(id);
+    const [result] = await pool.query(`
+      UPDATE routers SET is_active = 0 WHERE id = ?
+    `, [id]);
 
-    if (result.changes === 0) {
+    if (result.affectedRows === 0) {
       return { success: false, error: 'Router tidak ditemukan' };
     }
 
@@ -277,9 +279,11 @@ function deleteRouter(id) {
 /**
  * Update connection status for a router
  */
-function updateConnectionStatus(routerId, isConnected, errorMessage = null) {
+async function updateConnectionStatus(routerId, isConnected, errorMessage = null) {
   try {
-    const now = new Date().toISOString();
+    // Build MySQL compatible datetime format (YYYY-MM-DD HH:MM:SS)
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
     let query, params;
 
     if (isConnected) {
@@ -298,8 +302,7 @@ function updateConnectionStatus(routerId, isConnected, errorMessage = null) {
       params = [now, errorMessage, routerId];
     }
 
-    const stmt = db.prepare(query);
-    stmt.run(...params);
+    await pool.query(query, params);
     console.log(`[DB] Connection status updated: Router ${routerId} -> ${isConnected ? 'Connected' : 'Disconnected'}`);
   } catch (err) {
     console.error('[DB] Error updating connection status:', err.message);
@@ -309,14 +312,14 @@ function updateConnectionStatus(routerId, isConnected, errorMessage = null) {
 /**
  * Get all active router configs with decrypted passwords (for auto-connect)
  */
-function getAllRouterConfigs() {
+async function getAllRouterConfigs() {
   try {
-    const stmt = db.prepare(`
+    const [rows] = await pool.query(`
       SELECT id, name, ip_address, api_port, username, password
       FROM routers WHERE is_active = 1
     `);
 
-    return stmt.all().map(r => ({
+    return rows.map(r => ({
       ...r,
       password: decryptPassword(r.password)
     }));
@@ -329,10 +332,10 @@ function getAllRouterConfigs() {
 /**
  * Close database connection
  */
-function closeDatabase() {
-  if (db) {
-    db.close();
-    console.log('[DB] Database closed');
+async function closeDatabase() {
+  if (pool) {
+    await pool.end();
+    console.log('[DB] MySQL Database connection closed');
   }
 }
 

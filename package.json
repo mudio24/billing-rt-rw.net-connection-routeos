@@ -11,8 +11,8 @@
     "electron:build": "vite build && electron-builder"
   },
   "dependencies": {
-    "better-sqlite3": "^11.7.0",
-    "dotenv": "^16.4.7",
+    "dotenv": "^16.6.1",
+    "mysql2": "^3.22.2",
     "routeros-client": "^1.1.2"
   },
   "devDependencies": {

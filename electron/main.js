@@ -91,7 +91,7 @@ function createWindow() {
  */
 async function autoConnectRouters() {
   console.log('[App] Starting auto-connect to all active routers...');
-  const routerConfigs = dbService.getAllRouterConfigs();
+  const routerConfigs = await dbService.getAllRouterConfigs();
 
   if (routerConfigs.length === 0) {
     console.log('[App] No active routers found for auto-connect');
@@ -149,7 +149,7 @@ ipcMain.handle('router:delete', async (event, id) => {
 
 // Connect to router
 ipcMain.handle('router:connect', async (event, id) => {
-  const router = dbService.getRouterById(id, true);
+  const router = await dbService.getRouterById(id, true);
   if (!router) {
     return { success: false, message: 'Router tidak ditemukan' };
   }
@@ -191,18 +191,21 @@ ipcMain.handle('router:test-connection', async (event, data) => {
 // APP LIFECYCLE
 // ============================================
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   // Initialize database
-  const dbPath = path.resolve(__dirname, '..', 'data', 'app.db');
-  dbService.initDatabase(dbPath);
+  try {
+    await dbService.initDatabase();
+    
+    createWindow();
 
-  createWindow();
-
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
-    }
-  });
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow();
+      }
+    });
+  } catch (err) {
+    console.error('[App] Failed to start because database initialization failed:', err);
+  }
 });
 
 app.on('window-all-closed', async () => {
