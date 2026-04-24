@@ -1,0 +1,39 @@
+{
+  "name": "mikrotik-manager",
+  "version": "1.0.0",
+  "description": "Mikrotik Router Management Application",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "electron .",
+    "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron . --dev\"",
+    "electron:build": "vite build && electron-builder"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.7.0",
+    "dotenv": "^16.4.7",
+    "routeros-client": "^1.1.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "concurrently": "^9.1.2",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "vite": "^6.0.7",
+    "vue": "^3.5.13",
+    "wait-on": "^8.0.3"
+  },
+  "build": {
+    "appId": "com.mikrotik.manager",
+    "productName": "Mikrotik Manager",
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "data/**/*"
+    ],
+    "directories": {
+      "output": "release"
+    }
+  }
+}
