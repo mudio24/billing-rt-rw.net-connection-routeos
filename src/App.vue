@@ -57,10 +57,15 @@
         <div class="app-header-left">
           <div class="toolbar-title">Mikrotik Management List</div>
         </div>
-        <div class="header-actions" style="display: flex; gap: 16px; align-items: center;">
-          <button class="btn btn-sm btn-ghost" @click="toggleTheme">
-            {{ isLightMode ? 'Dark Mode' : 'Light Mode' }}
-          </button>
+        <div class="header-actions" style="display: flex; gap: 20px; align-items: center;">
+          <div class="theme-toggle-wrapper" style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">Dark</span>
+            <label class="theme-switch" title="Toggle Theme">
+              <input type="checkbox" :checked="isLightMode" @change="toggleTheme">
+              <span class="theme-slider"></span>
+            </label>
+            <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">Light</span>
+          </div>
           <div class="header-stats">
             <div class="header-stat">
               <span class="stat-dot connected"></span>
