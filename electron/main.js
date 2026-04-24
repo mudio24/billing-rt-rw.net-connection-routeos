@@ -202,6 +202,64 @@ ipcMain.handle('router:test-connection', async (event, data) => {
 });
 
 // ============================================
+// PPPoE HANDLERS
+// ============================================
+
+ipcMain.handle('mikrotik:get-pppoe-secrets', async (event, id) => {
+  try {
+    const data = await mikrotikService.getPppoeSecrets(id);
+    return { success: true, data };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('mikrotik:get-pppoe-profiles', async (event, id) => {
+  try {
+    const data = await mikrotikService.getPppoeProfiles(id);
+    return { success: true, data };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('mikrotik:get-active-pppoe', async (event, id) => {
+  try {
+    const data = await mikrotikService.getActivePppoe(id);
+    return { success: true, data };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('mikrotik:add-pppoe-secret', async (event, id, data) => {
+  try {
+    await mikrotikService.addPppoeSecret(id, data);
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('mikrotik:update-pppoe-secret', async (event, id, secretId, data) => {
+  try {
+    await mikrotikService.updatePppoeSecret(id, secretId, data);
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('mikrotik:delete-pppoe-secret', async (event, id, secretId) => {
+  try {
+    await mikrotikService.deletePppoeSecret(id, secretId);
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+// ============================================
 // APP LIFECYCLE
 // ============================================
 

@@ -25,13 +25,13 @@
       </div>
       
       <div class="sidebar-menu">
-        <div class="sidebar-item active">
+        <div class="sidebar-item" :class="{ active: activeTab === 'mikrotik' }" @click="activeTab = 'mikrotik'">
           <span>Mikrotik</span>
         </div>
         <div class="sidebar-item">
           <span>Vouchers</span>
         </div>
-        <div class="sidebar-item">
+        <div class="sidebar-item" :class="{ active: activeTab === 'pppoe' }" @click="activeTab = 'pppoe'">
           <span>PPPoE Users</span>
         </div>
         <div class="sidebar-item">
@@ -55,7 +55,7 @@
       <!-- Header -->
       <header class="app-header">
         <div class="app-header-left">
-          <div class="toolbar-title">Mikrotik Management List</div>
+          <div class="toolbar-title">{{ activeTab === 'mikrotik' ? 'Mikrotik Management List' : 'PPPoE Users Management' }}</div>
         </div>
         <div class="header-actions" style="display: flex; gap: 20px; align-items: center;">
           <div class="theme-toggle-wrapper" style="display: flex; align-items: center; gap: 8px;">
@@ -82,6 +82,7 @@
       <!-- Main Content -->
       <main class="main-content">
         <RouterManagement
+          v-if="activeTab === 'mikrotik'"
           :mikrotiks="mikrotiks"
           :loading-mikrotiks="loadingMikrotiks"
           @add-mikrotik="openAddForm"
@@ -91,6 +92,12 @@
           @disconnect-mikrotik="disconnectMikrotik"
           @search="handleSearch"
           @copy-ip="copyIp"
+        />
+
+        <PPPoEManagement
+          v-if="activeTab === 'pppoe'"
+          :mikrotiks="mikrotiks"
+          @add-toast="addToast"
         />
       </main>
     </div>
@@ -131,15 +138,18 @@
 <script>
 import RouterManagement from './components/RouterManagement.vue';
 import RouterForm from './components/RouterForm.vue';
+import PPPoEManagement from './components/PPPoEManagement.vue';
 
 export default {
   name: 'App',
   components: {
     RouterManagement,
-    RouterForm
+    RouterForm,
+    PPPoEManagement
   },
   data() {
     return {
+      activeTab: 'mikrotik',
       mikrotiks: [],
       filteredMikrotiks: [],
       loadingMikrotiks: new Set(),

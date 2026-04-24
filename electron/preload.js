@@ -25,6 +25,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('router:auto-connect-result', (event, data) => callback(data));
   },
 
+  // PPPoE API Methods
+  getPppoeSecrets: (id) => ipcRenderer.invoke('mikrotik:get-pppoe-secrets', id),
+  getPppoeProfiles: (id) => ipcRenderer.invoke('mikrotik:get-pppoe-profiles', id),
+  getActivePppoe: (id) => ipcRenderer.invoke('mikrotik:get-active-pppoe', id),
+  addPppoeSecret: (id, data) => ipcRenderer.invoke('mikrotik:add-pppoe-secret', id, data),
+  updatePppoeSecret: (id, secretId, data) => ipcRenderer.invoke('mikrotik:update-pppoe-secret', id, secretId, data),
+  deletePppoeSecret: (id, secretId) => ipcRenderer.invoke('mikrotik:delete-pppoe-secret', id, secretId),
+
   // Cleanup listeners
   removeAllListeners: (channel) => {
     ipcRenderer.removeAllListeners(channel);

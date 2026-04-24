@@ -333,6 +333,57 @@ class MikrotikServiceManager extends EventEmitter {
     await Promise.allSettled(promises);
     console.log(`[MikroTik] All routers disconnected`);
   }
+
+  // ==================
+  // PPPoE Methods
+  // ==================
+  async getPppoeSecrets(id) { 
+    const client = this.getClient(id); 
+    if (!client) throw new Error('Not connected'); 
+    return client.write('/ppp/secret/print'); 
+  }
+  
+  async getPppoeProfiles(id) { 
+    const client = this.getClient(id); 
+    if (!client) throw new Error('Not connected'); 
+    return client.write('/ppp/profile/print'); 
+  }
+  
+  async getActivePppoe(id) { 
+    const client = this.getClient(id); 
+    if (!client) throw new Error('Not connected'); 
+    return client.write('/ppp/active/print'); 
+  }
+  
+  async addPppoeSecret(id, data) { 
+    const client = this.getClient(id); 
+    if (!client) throw new Error('Not connected'); 
+    return client.write('/ppp/secret/add', { 
+      name: data.name, 
+      password: data.password, 
+      service: 'pppoe', 
+      profile: data.profile, 
+      comment: data.comment || '' 
+    }); 
+  }
+  
+  async updatePppoeSecret(id, secretId, data) { 
+    const client = this.getClient(id); 
+    if (!client) throw new Error('Not connected'); 
+    return client.write('/ppp/secret/set', { 
+      '.id': secretId, 
+      name: data.name, 
+      password: data.password, 
+      profile: data.profile, 
+      comment: data.comment || '' 
+    }); 
+  }
+  
+  async deletePppoeSecret(id, secretId) { 
+    const client = this.getClient(id); 
+    if (!client) throw new Error('Not connected'); 
+    return client.write('/ppp/secret/remove', { '.id': secretId }); 
+  }
 }
 
 // Export a singleton instance
