@@ -1,15 +1,19 @@
 # Mikrotik Router Management App (Electron + Vue 3)
 
-Aplikasi desktop profesional untuk mengelola daftar router Mikrotik. Dibangun menggunakan arsitektur modern **Electron**, **Vue.js 3**, dan **SQLite** sebagai penyimpanan database lokal yang super cepat dan responsif. Aplikasi ini dirancang agar pengguna dapat melakukan koneksi secara *real-time* ke router Mikrotik menggunakan MikroTik API Service.
+Aplikasi desktop profesional untuk mengelola jaringan dan router Mikrotik. Dibangun menggunakan arsitektur modern **Electron**, **Vue.js 3**, dan **MySQL** sebagai sentral penyimpanan database *billing* dan manajemen. Aplikasi ini dirancang agar pengguna dapat melakukan koneksi secara *real-time* ke router Mikrotik menggunakan MikroTik API Service.
 
-## Fitur Utama
+## ✨ Pembaruan Terbaru
+- **Migrasi Database ke MySQL:** Sistem database telah beralih dari SQLite ke **MySQL**, memungkinkan pengelolaan *billing* yang lebih tersentralisasi, stabil, dan bisa diperluas menjadi web-app.
+- **Dashboard & Real-time Monitoring:** Penambahan halaman muka interaktif yang menampilkan *Traffic Graph* (Grafik Bandwidth Rx/Tx) secara mulus *(Realtime)* menggunakan *Vue-Chart.js*, serta status Resource Router (CPU, Memory, Uptime).
+- **PPPoE Management (Hybrid Sync):** Mendukung fitur CRUD untuk *PPPoE User (Secrets)* dan *Service Profiles*. Profil dilengkapi form input *Pricing/Billing* yang tersimpan di MySQL lokal, yang digabungkan otomatis *(hybrid)* dengan konfigurasi riil di Router MikroTik.
+- **Dynamic Datalist IP Pools:** Form IP *Local/Remote Address* dilengkapi *dropdown* cerdas terintegrasi API MikroTik untuk memilih rute IP Pool secara langsung.
+
+## Fitur Utama Lainnya
 
 - 🌐 **Real-time Connectivity:** Memonitor status online/offline setiap router Mikrotik secara langsung.
-- 💾 **Local Database:** Penyimpanan aman router, IP address, username, MAC address di database SQLite lokal (`better-sqlite3`).
 - 🔐 **Secure Storage:** Penyimpanan kredensial secara efisien, mendukung koneksi otomatis saat aplikasi dijalankan.
-- ✨ **Clean UI/UX:** Desain *Glassmorphism* modern dengan tema gelap yang elegan dan responsif, menghilangkan ketergantungan pada ikon emoji demi desain yang lebih enterprise.
-- 🔍 **Pencarian Cepat:** Pencarian filter langsung (Live Search) untuk menemukan router berdasarkan nama atau IP address.
-- 📋 **Copy to Clipboard:** Salin IP Address router secara otomatis melalui UI.
+- 🎨 **Clean UI/UX:** Desain *Glassmorphism* modern dengan tema gelap *(Dark Mode)* yang terintegrasi penuh. Semua komponen UI dirancang agar nyaman di mata.
+- 🔍 **Pencarian Cepat & Cetak PDF:** Pencarian filter langsung *(Live Search)* untuk menemukan router/user, serta fitur Cetak Laporan Tabel khusus yang membersihkan *Sidebar* ketika masuk ke format kertas/PDF.
 - 🗔 **Zoom Kontrol:** Dukungan fitur memperbesar dan memperkecil UI via shortcut keyboard (`Ctrl +`, `Ctrl -`) dan scroll mouse.
 
 ## Teknologi yang Digunakan
@@ -18,18 +22,20 @@ Aplikasi desktop profesional untuk mengelola daftar router Mikrotik. Dibangun me
 | :--- | :--- |
 | **Framework UI** | Vue.js 3 (Vite) |
 | **Desktop Shell** | Electron |
-| **Database Lokal** | SQLite3 (`better-sqlite3`) |
+| **Database** | MySQL Server (via `mysql2`) |
+| **Charting Library** | Chart.js / vue-chartjs |
 | **Styling** | Vanilla CSS (Glassmorphism UI) |
-| **Integrasi API** | MikroTik RouterOS API |
+| **Integrasi API** | MikroTik RouterOS API (`routeros-client`) |
 
 ## Prasyarat (Requirements)
 
 Pastikan di komputermu sudah ter-install:
 1. **Node.js** (rekomendasi: v18 LTS atau v20 LTS)
 2. **NPM** atau **Yarn**
+3. **Database Server MySQL** (Misal: XAMPP, Laragon, MySQL Server) dengan database bernama `mikrotik_manager`.
 
 > [!NOTE]
-> Aplikasi ini memerlukan file native backend yang dicompile sesuai versi Sistem Operasi. Jika Anda mengkloning repository ini, pastikan menjalankan langkah instalasi di bawah ini dengan benar agar dependencies node dikompilasi ulang sesuai environment lokal Anda.
+> Aplikasi ini memerlukan *database* MySQL agar bisa berjalan penuh. Jika tabel MySQL belum tersedia di dalam server lokal Anda, sistem (Node JS / Electron) secara ajaib akan membuatkan seluruh struktur tabel secara otomatis saat aplikasi pertama kali djalankan (*Auto-Migrate*).
 
 ## Instalasi & Cara Menjalankan
 
@@ -39,26 +45,28 @@ Pastikan di komputermu sudah ter-install:
    cd billing-rt-rw.net-connection-routeos
    ```
 
-2. Jika ada direktori lama dengan nama mikrotik-app yang disalin di sini, pastikan kamu berada pada *root folder* projectnya. Karena ini menggunakan dependensi native binding seperti `better-sqlite3`, lakukan proses install untuk mengunggah dependencies:
+2. Jalankan proses install untuk mengunduh semua ekstensi Vue dan Electron:
    ```bash
    npm install
    ```
-   > _Catatan: Jika terjadi error mengenai bentrok versi node ABI (NODE_MODULE_VERSION), jalankan `npm rebuild` atau hapus folder `node_modules` lalu ulangi `npm install`._
 
-3. Jalankan server development (Vite + Electron):
+3. Setup Database Anda:
+   Buat database kosong bernama `mikrotik_manager` pada MySQL server Anda. Pastikan MySQL berjalan dengan *user* `root` dan tanpa kata sandi (*default* XAMPP/Laragon). Konfigurasi kredensial DB dapat diubah langsung di `electron/services/db-service.js`.
+
+4. Jalankan server development (Vite + Electron):
    ```bash
    npm run electron:dev
    ```
 
 ## Struktur Proyek Utama
 
-- `electron/` : Source code Main Process Electron, termasuk Service API Router, Database initialization, dan pembersihan port.
-- `src/` : Frontend Vue.js code (komponen antarmuka, CSS, dan logika tampilan).
-- `data/` : Tempat penyimpanan otomatis file database `app.db`. (Diabaikan oleh gitignore)
+- `electron/` : Source code *Main Process Electron*, berisi File-file IPC (Inter-Process Communication), API Router MikroTik, dan Engine Database MySQL.
+- `src/` : Kumpulan logika Frontend (Vue.js) yang bertugas merender UI dan grafik chart.
+- `database.sql` : *(Optional)* Skema database manual jika dibutuhkan.
 
 ## Build / Produksi
 
-Untuk melakukan proses *packaging* menjadi aplikasi instalable (seperti .exe untuk Windows), kamu perlu menyiapkan konfigurasi build melalui `package.json` menggunakan `electron-builder` (jika sudah dikonfigurasi), lalu jalankan:
+Untuk melakukan proses *packaging* menjadi aplikasi instalable (seperti `.exe` untuk Windows), kamu perlu menyiapkan konfigurasi build melalui `package.json` menggunakan `electron-builder`, lalu jalankan:
 
 ```bash
 npm run electron:build
@@ -67,9 +75,9 @@ npm run electron:build
 ## Troubleshooting Koneksi Mikrotik
 
 Jika mengalami pesan error seperti `ETIMEDOUT: Connection timeout` saat menghubungkan Mikrotik:
-- Cek ketersediaan koneksi jaringan kamu dengan router. Pastikan IP Router bisa diping.
+- Cek ketersediaan koneksi jaringan kamu dengan router. Pastikan IP Router bisa di-ping.
 - Pastikan Service **API (port bawaan 8728)** di dalam router Mikrotik sudah berstatus **Enabled**. (Cek di menu `IP` -> `Services`).
-- Jika router terhalang Firewall mikrotik, pastikan *Address List* untuk service API di MikroTik mengizinkan alamat IP dari rentang `0.0.0.0/0` atau IP statis komputermu.
+- Jika router terhalang Firewall mikrotik, pastikan *Address List* untuk service API di MikroTik mengizinkan alamat IP Anda.
 
 ---
 _dibuat untuk draf skripsi, Bissmillah_
