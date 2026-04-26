@@ -20,7 +20,7 @@
         <div class="sidebar-logo">MN</div>
         <div class="sidebar-brand">
           <div class="sidebar-title">Mikrotik Manager</div>
-          <div class="sidebar-subtitle">By Antigravity</div>
+          <div class="sidebar-subtitle">DIONIT CELL</div>
         </div>
       </div>
       
@@ -126,6 +126,11 @@
 
       <!-- Main Content -->
       <main class="main-content">
+        <Dashboard
+          v-if="activeTab === 'dashboard'"
+          :mikrotiks="mikrotiks"
+        />
+
         <RouterManagement
           v-if="activeTab === 'mikrotik'"
           :mikrotiks="mikrotiks"
@@ -184,13 +189,15 @@
 import RouterManagement from './components/RouterManagement.vue';
 import RouterForm from './components/RouterForm.vue';
 import PPPoEManagement from './components/PPPoEManagement.vue';
+import Dashboard from './components/Dashboard.vue';
 
 export default {
   name: 'App',
   components: {
     RouterManagement,
     RouterForm,
-    PPPoEManagement
+    PPPoEManagement,
+    Dashboard
   },
   data() {
     return {

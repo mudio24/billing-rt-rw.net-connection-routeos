@@ -245,6 +245,34 @@ ipcMain.handle('mikrotik:get-ip-pools', async (event, id) => {
   }
 });
 
+// Dashboard Monitoring
+ipcMain.handle('mikrotik:get-system-resource', async (event, id) => {
+  try {
+    const data = await mikrotikService.getSystemResource(id);
+    return { success: true, data };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('mikrotik:get-interfaces', async (event, id) => {
+  try {
+    const data = await mikrotikService.getInterfaces(id);
+    return { success: true, data };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('mikrotik:get-interface-traffic', async (event, id, interfaceName) => {
+  try {
+    const data = await mikrotikService.getInterfaceTraffic(id, interfaceName);
+    return { success: true, data };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
 // Profile CRUD Handlers
 ipcMain.handle('mikrotik:add-pppoe-profile', async (event, id, data) => {
   try {

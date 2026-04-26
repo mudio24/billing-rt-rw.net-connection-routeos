@@ -360,6 +360,25 @@ class MikrotikServiceManager extends EventEmitter {
     if (!client) throw new Error('Not connected');
     return client.write('/ip/pool/print');
   }
+
+  // Dashboard Monitoring
+  async getSystemResource(id) {
+    const client = this.getClient(id);
+    if (!client) throw new Error('Not connected');
+    return client.write('/system/resource/print');
+  }
+
+  async getInterfaces(id) {
+    const client = this.getClient(id);
+    if (!client) throw new Error('Not connected');
+    return client.write('/interface/print');
+  }
+
+  async getInterfaceTraffic(id, interfaceName) {
+    const client = this.getClient(id);
+    if (!client) throw new Error('Not connected');
+    return client.write('/interface/monitor-traffic', { interface: interfaceName, once: true });
+  }
   
   async addPppoeSecret(id, data) { 
     const client = this.getClient(id); 

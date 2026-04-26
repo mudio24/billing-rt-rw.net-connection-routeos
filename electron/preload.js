@@ -31,6 +31,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getActivePppoe: (id) => ipcRenderer.invoke('mikrotik:get-active-pppoe', id),
   getIpPools: (id) => ipcRenderer.invoke('mikrotik:get-ip-pools', id),
 
+  // Dashboard
+  getSystemResource: (id) => ipcRenderer.invoke('mikrotik:get-system-resource', id),
+  getInterfaces: (id) => ipcRenderer.invoke('mikrotik:get-interfaces', id),
+  getInterfaceTraffic: (id, interfaceName) => ipcRenderer.invoke('mikrotik:get-interface-traffic', id, interfaceName),
+
   addPppoeSecret: (id, data) => ipcRenderer.invoke('mikrotik:add-pppoe-secret', id, data),
   updatePppoeSecret: (id, secretId, data) => ipcRenderer.invoke('mikrotik:update-pppoe-secret', id, secretId, data),
   deletePppoeSecret: (id, secretId) => ipcRenderer.invoke('mikrotik:delete-pppoe-secret', id, secretId),
