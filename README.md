@@ -105,8 +105,29 @@ Halaman khusus terpisah yang dapat diakses oleh pelanggan menggunakan No. HP / U
 ---
 
 ## 📁 Struktur Direktori Utama
-- `server/` : Backend Express.js (Rest API, integrasi MikroTik, Scheduler Cron, WhatsApp Bot, Webhooks Xendit, koneksi Database MySQL).
-- `src/` : Kumpulan logika Frontend Vue.js (Komponen antarmuka, Vue-Router, Axios Interceptors, State Management, CSS Tema Gelap/Glassmorphism).
+Proyek ini mengadopsi standar industri pemisahan *backend* dan *frontend* (Monorepo Node.js & Vue 3). Semua peninggalan *Electron* dan skrip *legacy* telah dibersihkan sepenuhnya.
+
+```text
+mikrotik-app/
+├── server/                 # Murni Backend (Node.js + Express)
+│   ├── index.js            # Entry-point Server & Cron Jobs
+│   ├── routes/             # API Controllers (customers, invoices, whatsapp, dsb)
+│   ├── services/           # Business Logic (xendit, mikrotik, database)
+│   └── migrations/         # Skema tabel MySQL (Auto-migrate)
+├── src/                    # Murni Frontend (Vue 3 + Vite)
+│   ├── App.vue             # Entry-point UI Utama
+│   ├── main.js             
+│   ├── style.css           # Global UI Framework (Glassmorphism)
+│   └── components/         # Komponen Modular berdasar Domain/Fitur
+│       ├── auth/           # Sistem Login
+│       ├── portal/         # Dashboard Khusus Pelanggan (Bayar via Xendit)
+│       ├── billing/        # Manajemen Keuangan (Admin)
+│       ├── dashboard/      # Realtime Monitoring & Chart
+│       ├── pppoe/          # Konfigurasi Secret & Profil
+│       └── router/         # Pengaturan Koneksi Router
+├── .env                    # Variabel Rahasia (Database, API Keys Xendit)
+└── package.json            # Daftar Dependencies & Scripts
+```
 
 ---
 _Dibuat dan diperbarui untuk tugas akhir / operasional nyata ISP RT/RW Net._
