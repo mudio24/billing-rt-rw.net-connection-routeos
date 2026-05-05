@@ -1,0 +1,1513 @@
+# MikroTik Configuration Backup
+# Date: 29/4/2026, 21.30.57
+# Host: 10.10.10.1
+
+## System Identity
+## Command: /system/identity/print
+[
+  {
+    "name": "DIONIT-CELL"
+  }
+]
+
+## System Resource
+## Command: /system/resource/print
+[
+  {
+    "uptime": "11m11s",
+    "version": "6.47.10 (long-term)",
+    "build-time": "May/31/2021 09:54:59",
+    "factory-software": "6.44.5",
+    "free-memory": "7864320",
+    "total-memory": "33554432",
+    "cpu": "MIPS 24Kc V7.4",
+    "cpu-count": "1",
+    "cpu-frequency": "650",
+    "cpu-load": "2",
+    "free-hdd-space": "7819264",
+    "total-hdd-space": "16777216",
+    "write-sect-since-reboot": "1749",
+    "write-sect-total": "4795",
+    "bad-blocks": "0",
+    "architecture-name": "smips",
+    "board-name": "hAP lite",
+    "platform": "MikroTik"
+  }
+]
+
+## Interfaces
+## Command: /interface/print
+[
+  {
+    ".id": "*2",
+    "name": "LAN1",
+    "default-name": "ether2",
+    "type": "ether",
+    "mtu": "1500",
+    "actual-mtu": "1500",
+    "l2mtu": "1598",
+    "max-l2mtu": "2028",
+    "mac-address": "DC:2C:6E:5B:D2:A0",
+    "last-link-up-time": "jan/02/1970 07:10:11",
+    "link-downs": "0",
+    "rx-byte": "839644",
+    "tx-byte": "7384737",
+    "rx-packet": "9119",
+    "tx-packet": "9198",
+    "rx-drop": "0",
+    "tx-drop": "0",
+    "tx-queue-drop": "0",
+    "rx-error": "0",
+    "tx-error": "0",
+    "fp-rx-byte": "795422",
+    "fp-tx-byte": "7348123",
+    "fp-rx-packet": "9025",
+    "fp-tx-packet": "9200",
+    "running": "true",
+    "slave": "true",
+    "disabled": "false"
+  },
+  {
+    ".id": "*3",
+    "name": "LAN2",
+    "default-name": "ether3",
+    "type": "ether",
+    "mtu": "1500",
+    "actual-mtu": "1500",
+    "l2mtu": "1598",
+    "max-l2mtu": "2028",
+    "mac-address": "DC:2C:6E:5B:D2:A1",
+    "link-downs": "0",
+    "rx-byte": "0",
+    "tx-byte": "0",
+    "rx-packet": "0",
+    "tx-packet": "0",
+    "rx-drop": "0",
+    "tx-drop": "0",
+    "tx-queue-drop": "0",
+    "rx-error": "0",
+    "tx-error": "0",
+    "fp-rx-byte": "0",
+    "fp-tx-byte": "0",
+    "fp-rx-packet": "0",
+    "fp-tx-packet": "0",
+    "running": "false",
+    "slave": "true",
+    "disabled": "false"
+  },
+  {
+    ".id": "*4",
+    "name": "LAN3",
+    "default-name": "ether4",
+    "type": "ether",
+    "mtu": "1500",
+    "actual-mtu": "1500",
+    "l2mtu": "1598",
+    "max-l2mtu": "2028",
+    "mac-address": "DC:2C:6E:5B:D2:A2",
+    "link-downs": "0",
+    "rx-byte": "0",
+    "tx-byte": "0",
+    "rx-packet": "0",
+    "tx-packet": "0",
+    "rx-drop": "0",
+    "tx-drop": "0",
+    "tx-queue-drop": "0",
+    "rx-error": "0",
+    "tx-error": "0",
+    "fp-rx-byte": "0",
+    "fp-tx-byte": "0",
+    "fp-rx-packet": "0",
+    "fp-tx-packet": "0",
+    "running": "false",
+    "slave": "true",
+    "disabled": "false"
+  },
+  {
+    ".id": "*1",
+    "name": "WAN",
+    "default-name": "ether1",
+    "type": "ether",
+    "mtu": "1500",
+    "actual-mtu": "1500",
+    "l2mtu": "1598",
+    "max-l2mtu": "2028",
+    "mac-address": "DC:2C:6E:5B:D2:9F",
+    "link-downs": "0",
+    "rx-byte": "0",
+    "tx-byte": "0",
+    "rx-packet": "0",
+    "tx-packet": "0",
+    "rx-drop": "0",
+    "tx-drop": "0",
+    "tx-queue-drop": "0",
+    "rx-error": "0",
+    "tx-error": "0",
+    "fp-rx-byte": "0",
+    "fp-tx-byte": "0",
+    "fp-rx-packet": "0",
+    "fp-tx-packet": "0",
+    "running": "false",
+    "disabled": "false"
+  },
+  {
+    ".id": "*5",
+    "name": "pwr-line1",
+    "default-name": "pwr-line1",
+    "type": "ether",
+    "mtu": "1500",
+    "actual-mtu": "1500",
+    "l2mtu": "1598",
+    "max-l2mtu": "2028",
+    "mac-address": "DC:2C:6E:5B:D2:A3",
+    "link-downs": "0",
+    "rx-byte": "0",
+    "tx-byte": "0",
+    "rx-packet": "0",
+    "tx-packet": "0",
+    "rx-drop": "0",
+    "tx-drop": "0",
+    "tx-queue-drop": "0",
+    "rx-error": "0",
+    "tx-error": "0",
+    "fp-rx-byte": "0",
+    "fp-tx-byte": "0",
+    "fp-rx-packet": "0",
+    "fp-tx-packet": "0",
+    "running": "false",
+    "disabled": "false"
+  },
+  {
+    ".id": "*6",
+    "name": "wlan1",
+    "default-name": "wlan1",
+    "type": "wlan",
+    "mtu": "1500",
+    "actual-mtu": "1500",
+    "l2mtu": "1600",
+    "max-l2mtu": "2290",
+    "mac-address": "DC:2C:6E:5B:D2:A4",
+    "link-downs": "0",
+    "rx-byte": "0",
+    "tx-byte": "1386",
+    "rx-packet": "0",
+    "tx-packet": "33",
+    "rx-drop": "0",
+    "tx-drop": "0",
+    "tx-queue-drop": "0",
+    "rx-error": "0",
+    "tx-error": "0",
+    "fp-rx-byte": "0",
+    "fp-tx-byte": "0",
+    "fp-rx-packet": "0",
+    "fp-tx-packet": "0",
+    "running": "false",
+    "disabled": "false"
+  },
+  {
+    ".id": "*8",
+    "name": "BRIDGE-LAN",
+    "type": "bridge",
+    "mtu": "auto",
+    "actual-mtu": "1500",
+    "l2mtu": "1598",
+    "mac-address": "DC:2C:6E:5B:D2:A0",
+    "last-link-up-time": "jan/02/1970 07:10:03",
+    "link-downs": "0",
+    "rx-byte": "672232",
+    "tx-byte": "20015",
+    "rx-packet": "9018",
+    "tx-packet": "233",
+    "rx-drop": "0",
+    "tx-drop": "0",
+    "tx-queue-drop": "0",
+    "rx-error": "0",
+    "tx-error": "0",
+    "fp-rx-byte": "19669",
+    "fp-tx-byte": "0",
+    "fp-rx-packet": "258",
+    "fp-tx-packet": "0",
+    "running": "true",
+    "disabled": "false"
+  }
+]
+
+## Bridge
+## Command: /interface/bridge/print
+[
+  {
+    ".id": "*8",
+    "name": "BRIDGE-LAN",
+    "mtu": "auto",
+    "actual-mtu": "1500",
+    "l2mtu": "1598",
+    "arp": "enabled",
+    "arp-timeout": "auto",
+    "mac-address": "DC:2C:6E:5B:D2:A0",
+    "protocol-mode": "rstp",
+    "fast-forward": "true",
+    "igmp-snooping": "false",
+    "auto-mac": "true",
+    "ageing-time": "5m",
+    "priority": "0x8000",
+    "max-message-age": "20s",
+    "forward-delay": "15s",
+    "transmit-hold-count": "6",
+    "vlan-filtering": "false",
+    "dhcp-snooping": "false",
+    "running": "true",
+    "disabled": "false"
+  }
+]
+
+## Bridge Ports
+## Command: /interface/bridge/port/print
+[
+  {
+    ".id": "*0",
+    ".nextid": "*1",
+    "interface": "LAN1",
+    "bridge": "BRIDGE-LAN",
+    "priority": "0x80",
+    "path-cost": "10",
+    "internal-path-cost": "10",
+    "edge": "auto",
+    "point-to-point": "auto",
+    "learn": "auto",
+    "horizon": "none",
+    "hw": "true",
+    "auto-isolate": "false",
+    "restricted-role": "false",
+    "restricted-tcn": "false",
+    "pvid": "1",
+    "frame-types": "admit-all",
+    "ingress-filtering": "false",
+    "unknown-unicast-flood": "true",
+    "unknown-multicast-flood": "true",
+    "broadcast-flood": "true",
+    "tag-stacking": "false",
+    "bpdu-guard": "false",
+    "trusted": "false",
+    "multicast-router": "temporary-query",
+    "fast-leave": "false",
+    "status": "in-bridge",
+    "port-number": "1",
+    "role": "designated-port",
+    "edge-port": "true",
+    "edge-port-discovery": "true",
+    "point-to-point-port": "true",
+    "external-fdb-status": "false",
+    "sending-rstp": "true",
+    "learning": "true",
+    "forwarding": "true",
+    "hw-offload": "true",
+    "hw-offload-group": "switch1",
+    "debug-info": " prio 0x8000 num 1\n role:Dsgn (0) learn 1 forward 1 infoIs Mine edge 1 sendRSTP 1\n proposing 0 agreed 1 agree 0 synced 1 isolate 0 newInfo 0\n migration:SENSING tc:LEARNING\n ptimes: Msg:0 Max: 5120 FD: 3840 HT: 512\n pprio: RBI: 8000:DC2C6E5BD2A0 RPC: 0 BI: 8000:DC2C6E5BD2A0 tP: 0x8001 rP: 0x8001\n dtimes: Msg:0 Max: 5120 FD: 3840 HT: 512\n dprio: RBI: 8000:DC2C6E5BD2A0 RPC: 0 BI: 8000:DC2C6E5BD2A0 tP: 0x8001 rP: 0x8001\n",
+    "inactive": "false",
+    "dynamic": "false",
+    "disabled": "false"
+  },
+  {
+    ".id": "*1",
+    ".nextid": "*2",
+    "interface": "LAN2",
+    "bridge": "BRIDGE-LAN",
+    "priority": "0x80",
+    "path-cost": "10",
+    "internal-path-cost": "10",
+    "edge": "auto",
+    "point-to-point": "auto",
+    "learn": "auto",
+    "horizon": "none",
+    "hw": "true",
+    "auto-isolate": "false",
+    "restricted-role": "false",
+    "restricted-tcn": "false",
+    "pvid": "1",
+    "frame-types": "admit-all",
+    "ingress-filtering": "false",
+    "unknown-unicast-flood": "true",
+    "unknown-multicast-flood": "true",
+    "broadcast-flood": "true",
+    "tag-stacking": "false",
+    "bpdu-guard": "false",
+    "trusted": "false",
+    "multicast-router": "temporary-query",
+    "fast-leave": "false",
+    "status": "in-bridge",
+    "port-number": "2",
+    "role": "disabled-port",
+    "edge-port": "false",
+    "edge-port-discovery": "true",
+    "point-to-point-port": "true",
+    "external-fdb-status": "false",
+    "sending-rstp": "true",
+    "learning": "false",
+    "forwarding": "false",
+    "hw-offload": "true",
+    "hw-offload-group": "switch1",
+    "debug-info": " prio 0x8000 num 2\n role:Dis (0) learn 0 forward 0 infoIs Dis edge 0 sendRSTP 1\n proposing 0 agreed 0 agree 0 synced 1 isolate 0 newInfo 0\n migration:CHK_RSTP tc:INACTIVE\n ptimes: Msg:535553 Max: 26368 FD: 17361927 HT: 3072\n pprio: RBI: 8000:000000000000 RPC: 0 BI: 8000:000000000000 tP: 0x0 rP: 0x0\n dtimes: Msg:0 Max: 5120 FD: 3840 HT: 512\n dprio: RBI: 8000:DC2C6E5BD2A0 RPC: 0 BI: 8000:DC2C6E5BD2A0 tP: 0x8002 rP: 0x8002\n",
+    "inactive": "true",
+    "dynamic": "false",
+    "disabled": "false"
+  },
+  {
+    ".id": "*2",
+    ".nextid": "*FFFFFFFF",
+    "interface": "LAN3",
+    "bridge": "BRIDGE-LAN",
+    "priority": "0x80",
+    "path-cost": "10",
+    "internal-path-cost": "10",
+    "edge": "auto",
+    "point-to-point": "auto",
+    "learn": "auto",
+    "horizon": "none",
+    "hw": "true",
+    "auto-isolate": "false",
+    "restricted-role": "false",
+    "restricted-tcn": "false",
+    "pvid": "1",
+    "frame-types": "admit-all",
+    "ingress-filtering": "false",
+    "unknown-unicast-flood": "true",
+    "unknown-multicast-flood": "true",
+    "broadcast-flood": "true",
+    "tag-stacking": "false",
+    "bpdu-guard": "false",
+    "trusted": "false",
+    "multicast-router": "temporary-query",
+    "fast-leave": "false",
+    "status": "in-bridge",
+    "port-number": "3",
+    "role": "disabled-port",
+    "edge-port": "false",
+    "edge-port-discovery": "true",
+    "point-to-point-port": "true",
+    "external-fdb-status": "false",
+    "sending-rstp": "true",
+    "learning": "false",
+    "forwarding": "false",
+    "hw-offload": "true",
+    "hw-offload-group": "switch1",
+    "debug-info": " prio 0x8000 num 3\n role:Dis (0) learn 0 forward 0 infoIs Dis edge 0 sendRSTP 1\n proposing 0 agreed 0 agree 0 synced 1 isolate 0 newInfo 0\n migration:CHK_RSTP tc:INACTIVE\n ptimes: Msg:9809 Max: 4294967295 FD: 2000054592 HT: 4294967295\n pprio: RBI: 8000:000000000000 RPC: 0 BI: 8000:000000000000 tP: 0x0 rP: 0x0\n dtimes: Msg:0 Max: 5120 FD: 3840 HT: 512\n dprio: RBI: 8000:DC2C6E5BD2A0 RPC: 0 BI: 8000:DC2C6E5BD2A0 tP: 0x8003 rP: 0x8003\n",
+    "inactive": "true",
+    "dynamic": "false",
+    "disabled": "false"
+  }
+]
+
+## Wireless
+## Command: /interface/wireless/print
+[
+  {
+    ".id": "*6",
+    "default-name": "wlan1",
+    "name": "wlan1",
+    "mtu": "1500",
+    "l2mtu": "1600",
+    "mac-address": "DC:2C:6E:5B:D2:A4",
+    "arp": "enabled",
+    "arp-timeout": "auto",
+    "disable-running-check": "false",
+    "interface-type": "Atheros AR9300",
+    "radio-name": "DC2C6E5BD2A4",
+    "mode": "ap-bridge",
+    "ssid": "DIONIT-HOTSPOT",
+    "area": "",
+    "frequency-mode": "regulatory-domain",
+    "country": "etsi",
+    "installation": "any",
+    "antenna-gain": "2",
+    "frequency": "2412",
+    "band": "2ghz-b/g/n",
+    "channel-width": "20mhz",
+    "secondary-channel": "",
+    "scan-list": "default",
+    "wireless-protocol": "any",
+    "rate-set": "default",
+    "supported-rates-b": "1Mbps,2Mbps,5.5Mbps,11Mbps",
+    "supported-rates-a/g": "6Mbps,9Mbps,12Mbps,18Mbps,24Mbps,36Mbps,48Mbps,54Mbps",
+    "basic-rates-b": "1Mbps",
+    "basic-rates-a/g": "6Mbps",
+    "max-station-count": "2007",
+    "distance": "dynamic",
+    "tx-power-mode": "default",
+    "noise-floor-threshold": "default",
+    "nv2-noise-floor-offset": "default",
+    "vlan-mode": "no-tag",
+    "vlan-id": "1",
+    "wds-mode": "disabled",
+    "wds-default-bridge": "none",
+    "wds-default-cost": "100",
+    "wds-cost-range": "50-150",
+    "wds-ignore-ssid": "false",
+    "update-stats-interval": "disabled",
+    "bridge-mode": "enabled",
+    "default-authentication": "true",
+    "default-forwarding": "true",
+    "default-ap-tx-limit": "0",
+    "default-client-tx-limit": "0",
+    "wmm-support": "disabled",
+    "hide-ssid": "false",
+    "security-profile": "hotspot-sec",
+    "interworking-profile": "disabled",
+    "wps-mode": "push-button",
+    "station-roaming": "disabled",
+    "disconnect-timeout": "3s",
+    "on-fail-retry-time": "100ms",
+    "preamble-mode": "both",
+    "compression": "false",
+    "allow-sharedkey": "false",
+    "station-bridge-clone-mac": "00:00:00:00:00:00",
+    "ampdu-priorities": "0",
+    "guard-interval": "any",
+    "ht-supported-mcs": "mcs-0,mcs-1,mcs-2,mcs-3,mcs-4,mcs-5,mcs-6,mcs-7,mcs-8,mcs-9,mcs-10,mcs-11,mcs-12,mcs-13,mcs-14,mcs-15,mcs-16,mcs-17,mcs-18,mcs-19,mcs-20,mcs-21,mcs-22,mcs-23",
+    "ht-basic-mcs": "mcs-0,mcs-1,mcs-2,mcs-3,mcs-4,mcs-5,mcs-6,mcs-7",
+    "tx-chains": "0,1",
+    "rx-chains": "0,1",
+    "amsdu-limit": "8192",
+    "amsdu-threshold": "8192",
+    "tdma-period-size": "2",
+    "nv2-queue-count": "2",
+    "nv2-qos": "default",
+    "nv2-cell-radius": "30",
+    "nv2-security": "disabled",
+    "nv2-preshared-key": "",
+    "nv2-mode": "dynamic-downlink",
+    "nv2-downlink-ratio": "50",
+    "nv2-sync-secret": "",
+    "hw-retries": "7",
+    "frame-lifetime": "0",
+    "adaptive-noise-immunity": "none",
+    "hw-fragmentation-threshold": "disabled",
+    "hw-protection-mode": "none",
+    "hw-protection-threshold": "0",
+    "frequency-offset": "0",
+    "rate-selection": "advanced",
+    "multicast-helper": "default",
+    "multicast-buffering": "enabled",
+    "keepalive-frames": "enabled",
+    "skip-dfs-channels": "disabled",
+    "running": "false",
+    "disabled": "false"
+  }
+]
+
+## Wireless Security
+## Command: /interface/wireless/security-profiles/print
+[
+  {
+    ".id": "*0",
+    "name": "default",
+    "mode": "none",
+    "authentication-types": "",
+    "unicast-ciphers": "aes-ccm",
+    "group-ciphers": "aes-ccm",
+    "wpa-pre-shared-key": "",
+    "wpa2-pre-shared-key": "",
+    "supplicant-identity": "MikroTik",
+    "eap-methods": "passthrough",
+    "tls-mode": "no-certificates",
+    "tls-certificate": "none",
+    "mschapv2-username": "",
+    "mschapv2-password": "",
+    "disable-pmkid": "false",
+    "static-algo-0": "none",
+    "static-key-0": "",
+    "static-algo-1": "none",
+    "static-key-1": "",
+    "static-algo-2": "none",
+    "static-key-2": "",
+    "static-algo-3": "none",
+    "static-key-3": "",
+    "static-transmit-key": "key-0",
+    "static-sta-private-algo": "none",
+    "static-sta-private-key": "",
+    "radius-mac-authentication": "false",
+    "radius-mac-accounting": "false",
+    "radius-eap-accounting": "false",
+    "interim-update": "0s",
+    "radius-mac-format": "XX:XX:XX:XX:XX:XX",
+    "radius-mac-mode": "as-username",
+    "radius-called-format": "mac:ssid",
+    "radius-mac-caching": "disabled",
+    "group-key-update": "5m",
+    "management-protection": "disabled",
+    "management-protection-key": "",
+    "default": "true"
+  },
+  {
+    ".id": "*1",
+    "name": "hotspot-sec",
+    "mode": "none",
+    "authentication-types": "wpa2-psk",
+    "unicast-ciphers": "aes-ccm",
+    "group-ciphers": "aes-ccm",
+    "wpa-pre-shared-key": "",
+    "wpa2-pre-shared-key": "12345678",
+    "supplicant-identity": "MikroTik",
+    "eap-methods": "passthrough",
+    "tls-mode": "no-certificates",
+    "tls-certificate": "none",
+    "mschapv2-username": "",
+    "mschapv2-password": "",
+    "disable-pmkid": "false",
+    "static-algo-0": "none",
+    "static-key-0": "",
+    "static-algo-1": "none",
+    "static-key-1": "",
+    "static-algo-2": "none",
+    "static-key-2": "",
+    "static-algo-3": "none",
+    "static-key-3": "",
+    "static-transmit-key": "key-0",
+    "static-sta-private-algo": "none",
+    "static-sta-private-key": "",
+    "radius-mac-authentication": "false",
+    "radius-mac-accounting": "false",
+    "radius-eap-accounting": "false",
+    "interim-update": "0s",
+    "radius-mac-format": "XX:XX:XX:XX:XX:XX",
+    "radius-mac-mode": "as-username",
+    "radius-called-format": "mac:ssid",
+    "radius-mac-caching": "disabled",
+    "group-key-update": "5m",
+    "management-protection": "disabled",
+    "management-protection-key": "",
+    "default": "false"
+  }
+]
+
+## IP Addresses
+## Command: /ip/address/print
+[
+  {
+    ".id": "*2",
+    "address": "10.10.10.1/24",
+    "network": "10.10.10.0",
+    "interface": "BRIDGE-LAN",
+    "actual-interface": "BRIDGE-LAN",
+    "invalid": "false",
+    "dynamic": "false",
+    "disabled": "false",
+    "comment": "ADMIN"
+  },
+  {
+    ".id": "*3",
+    "address": "10.10.30.1/24",
+    "network": "10.10.30.0",
+    "interface": "BRIDGE-LAN",
+    "actual-interface": "BRIDGE-LAN",
+    "invalid": "false",
+    "dynamic": "false",
+    "disabled": "false",
+    "comment": "HOTSPOT"
+  },
+  {
+    ".id": "*5",
+    "address": "10.10.30.1/24",
+    "network": "10.10.30.0",
+    "interface": "wlan1",
+    "actual-interface": "wlan1",
+    "invalid": "false",
+    "dynamic": "false",
+    "disabled": "false",
+    "comment": "HOTSPOT"
+  }
+]
+
+## IP Pools
+## Command: /ip/pool/print
+[
+  {
+    ".id": "*1",
+    "name": "pool-admin",
+    "ranges": "10.10.10.2-10.10.10.50"
+  },
+  {
+    ".id": "*2",
+    "name": "pool-pppoe",
+    "ranges": "10.10.20.2-10.10.20.254"
+  },
+  {
+    ".id": "*3",
+    "name": "pool-hotspot",
+    "ranges": "10.10.30.2-10.10.30.254"
+  }
+]
+
+## DHCP Server
+## Command: /ip/dhcp-server/print
+[
+  {
+    ".id": "*2",
+    "name": "dhcp-admin",
+    "interface": "BRIDGE-LAN",
+    "lease-time": "10m",
+    "address-pool": "pool-admin",
+    "authoritative": "yes",
+    "use-radius": "no",
+    "lease-script": "",
+    "dynamic": "false",
+    "invalid": "false",
+    "disabled": "false"
+  },
+  {
+    ".id": "*4",
+    "name": "dhcp-hotspot",
+    "interface": "wlan1",
+    "lease-time": "10m",
+    "address-pool": "pool-hotspot",
+    "authoritative": "yes",
+    "use-radius": "no",
+    "lease-script": "",
+    "dynamic": "false",
+    "invalid": "true",
+    "disabled": "false"
+  }
+]
+
+## DHCP Server Network
+## Command: /ip/dhcp-server/network/print
+[
+  {
+    ".id": "*2",
+    "address": "10.10.10.0/24",
+    "gateway": "10.10.10.1",
+    "dns-server": "10.10.10.1",
+    "wins-server": "",
+    "ntp-server": "",
+    "caps-manager": "",
+    "dhcp-option": "",
+    "dynamic": "false"
+  },
+  {
+    ".id": "*4",
+    "address": "10.10.30.0/24",
+    "gateway": "10.10.30.1",
+    "dns-server": "10.10.30.1",
+    "wins-server": "",
+    "ntp-server": "",
+    "caps-manager": "",
+    "dhcp-option": "",
+    "dynamic": "false"
+  }
+]
+
+## DHCP Client
+## Command: /ip/dhcp-client/print
+[
+  {
+    ".id": "*2",
+    "interface": "WAN",
+    "add-default-route": "yes",
+    "default-route-distance": "1",
+    "use-peer-dns": "true",
+    "use-peer-ntp": "true",
+    "dhcp-options": "hostname,clientid",
+    "invalid": "true",
+    "dynamic": "false",
+    "disabled": "false"
+  }
+]
+
+## IP DNS
+## Command: /ip/dns/print
+[
+  {
+    "servers": "8.8.8.8,1.1.1.1",
+    "dynamic-servers": "",
+    "use-doh-server": "",
+    "verify-doh-cert": "false",
+    "allow-remote-requests": "true",
+    "max-udp-packet-size": "4096",
+    "query-server-timeout": "2s",
+    "query-total-timeout": "10s",
+    "max-concurrent-queries": "100",
+    "max-concurrent-tcp-sessions": "20",
+    "cache-size": "2048",
+    "cache-max-ttl": "1w",
+    "cache-used": "21"
+  }
+]
+
+## IP Services
+## Command: /ip/service/print
+[
+  {
+    ".id": "*0",
+    "name": "telnet",
+    "port": "23",
+    "address": "",
+    "invalid": "false",
+    "disabled": "false"
+  },
+  {
+    ".id": "*1",
+    "name": "ftp",
+    "port": "21",
+    "address": "",
+    "invalid": "false",
+    "disabled": "false"
+  },
+  {
+    ".id": "*2",
+    "name": "www",
+    "port": "80",
+    "address": "",
+    "invalid": "false",
+    "disabled": "false"
+  },
+  {
+    ".id": "*4",
+    "name": "ssh",
+    "port": "22",
+    "address": "",
+    "invalid": "false",
+    "disabled": "false"
+  },
+  {
+    ".id": "*6",
+    "name": "www-ssl",
+    "port": "443",
+    "address": "",
+    "certificate": "none",
+    "tls-version": "any",
+    "invalid": "false",
+    "disabled": "false"
+  },
+  {
+    ".id": "*7",
+    "name": "api",
+    "port": "8728",
+    "address": "10.10.10.0/24",
+    "invalid": "false",
+    "disabled": "false"
+  },
+  {
+    ".id": "*8",
+    "name": "winbox",
+    "port": "8291",
+    "address": "10.10.10.0/24",
+    "invalid": "false",
+    "disabled": "false"
+  },
+  {
+    ".id": "*9",
+    "name": "api-ssl",
+    "port": "8729",
+    "address": "",
+    "certificate": "none",
+    "tls-version": "any",
+    "invalid": "false",
+    "disabled": "false"
+  }
+]
+
+## IP Firewall Filter
+## Command: /ip/firewall/filter/print
+[
+  {
+    ".id": "*3A",
+    "chain": "forward",
+    "action": "passthrough",
+    "bytes": "0",
+    "packets": "0",
+    "dynamic": "true",
+    "comment": "special dummy rule to show fasttrack counters"
+  },
+  {
+    ".id": "*51",
+    "chain": "input",
+    "action": "accept",
+    "src-address": "10.10.10.0/24",
+    "bytes": "289417",
+    "packets": "4085",
+    "invalid": "false",
+    "dynamic": "false",
+    "comment": "Allow Admin LAN full access"
+  },
+  {
+    ".id": "*52",
+    "chain": "input",
+    "action": "accept",
+    "protocol": "tcp",
+    "src-address": "10.10.10.0/24",
+    "dst-port": "8728",
+    "bytes": "0",
+    "packets": "0",
+    "invalid": "false",
+    "dynamic": "false",
+    "comment": "Allow API from Admin"
+  },
+  {
+    ".id": "*53",
+    "chain": "input",
+    "action": "accept",
+    "connection-state": "established,related",
+    "bytes": "468",
+    "packets": "9",
+    "invalid": "false",
+    "dynamic": "false"
+  },
+  {
+    ".id": "*54",
+    "chain": "input",
+    "action": "drop",
+    "connection-state": "invalid",
+    "bytes": "0",
+    "packets": "0",
+    "invalid": "false",
+    "dynamic": "false"
+  },
+  {
+    ".id": "*55",
+    "chain": "input",
+    "action": "drop",
+    "in-interface": "WAN",
+    "bytes": "0",
+    "packets": "0",
+    "invalid": "false",
+    "dynamic": "false"
+  },
+  {
+    ".id": "*56",
+    "chain": "forward",
+    "action": "fasttrack-connection",
+    "connection-state": "established,related",
+    "bytes": "0",
+    "packets": "0",
+    "invalid": "false",
+    "dynamic": "false"
+  },
+  {
+    ".id": "*57",
+    "chain": "forward",
+    "action": "accept",
+    "connection-state": "established,related",
+    "bytes": "0",
+    "packets": "0",
+    "invalid": "false",
+    "dynamic": "false"
+  },
+  {
+    ".id": "*58",
+    "chain": "forward",
+    "action": "drop",
+    "src-address": "10.10.20.0/24",
+    "dst-address": "10.10.20.0/24",
+    "bytes": "0",
+    "packets": "0",
+    "invalid": "false",
+    "dynamic": "false"
+  }
+]
+
+## IP Firewall NAT
+## Command: /ip/firewall/nat/print
+[
+  {
+    ".id": "*34",
+    "chain": "dstnat",
+    "action": "jump",
+    "jump-target": "hotspot",
+    "hotspot": "from-client",
+    "bytes": "121337",
+    "packets": "1440",
+    "invalid": "false",
+    "dynamic": "true"
+  },
+  {
+    ".id": "*35",
+    "chain": "hotspot",
+    "action": "jump",
+    "jump-target": "pre-hotspot",
+    "bytes": "121337",
+    "packets": "1440",
+    "invalid": "false",
+    "dynamic": "true"
+  },
+  {
+    ".id": "*36",
+    "chain": "hotspot",
+    "action": "redirect",
+    "to-ports": "64872",
+    "protocol": "udp",
+    "dst-port": "53",
+    "bytes": "4487",
+    "packets": "67",
+    "invalid": "false",
+    "dynamic": "true"
+  },
+  {
+    ".id": "*37",
+    "chain": "hotspot",
+    "action": "redirect",
+    "to-ports": "64872",
+    "protocol": "tcp",
+    "dst-port": "53",
+    "bytes": "104",
+    "packets": "2",
+    "invalid": "false",
+    "dynamic": "true"
+  },
+  {
+    ".id": "*38",
+    "chain": "hotspot",
+    "action": "redirect",
+    "to-ports": "64873",
+    "protocol": "tcp",
+    "hotspot": "local-dst",
+    "dst-port": "80",
+    "bytes": "0",
+    "packets": "0",
+    "invalid": "false",
+    "dynamic": "true"
+  },
+  {
+    ".id": "*39",
+    "chain": "hotspot",
+    "action": "redirect",
+    "to-ports": "64875",
+    "protocol": "tcp",
+    "hotspot": "local-dst",
+    "dst-port": "443",
+    "bytes": "0",
+    "packets": "0",
+    "invalid": "false",
+    "dynamic": "true"
+  },
+  {
+    ".id": "*3A",
+    "chain": "hotspot",
+    "action": "jump",
+    "jump-target": "hs-unauth",
+    "protocol": "tcp",
+    "hotspot": "!auth",
+    "bytes": "52",
+    "packets": "1",
+    "invalid": "false",
+    "dynamic": "true"
+  },
+  {
+    ".id": "*3B",
+    "chain": "hotspot",
+    "action": "jump",
+    "jump-target": "hs-auth",
+    "protocol": "tcp",
+    "hotspot": "auth",
+    "bytes": "0",
+    "packets": "0",
+    "invalid": "false",
+    "dynamic": "true"
+  },
+  {
+    ".id": "*3C",
+    "chain": "hs-unauth",
+    "action": "redirect",
+    "to-ports": "64874",
+    "protocol": "tcp",
+    "dst-port": "80",
+    "bytes": "0",
+    "packets": "0",
+    "invalid": "false",
+    "dynamic": "true"
+  },
+  {
+    ".id": "*3D",
+    "chain": "hs-unauth",
+    "action": "redirect",
+    "to-ports": "64874",
+    "protocol": "tcp",
+    "dst-port": "3128",
+    "bytes": "0",
+    "packets": "0",
+    "invalid": "false",
+    "dynamic": "true"
+  },
+  {
+    ".id": "*3E",
+    "chain": "hs-unauth",
+    "action": "redirect",
+    "to-ports": "64874",
+    "protocol": "tcp",
+    "dst-port": "8080",
+    "bytes": "0",
+    "packets": "0",
+    "invalid": "false",
+    "dynamic": "true"
+  },
+  {
+    ".id": "*3F",
+    "chain": "hs-unauth",
+    "action": "jump",
+    "jump-target": "hs-smtp",
+    "protocol": "tcp",
+    "dst-port": "25",
+    "bytes": "0",
+    "packets": "0",
+    "invalid": "false",
+    "dynamic": "true"
+  },
+  {
+    ".id": "*40",
+    "chain": "hs-auth",
+    "action": "redirect",
+    "to-ports": "64874",
+    "protocol": "tcp",
+    "hotspot": "http",
+    "bytes": "0",
+    "packets": "0",
+    "invalid": "false",
+    "dynamic": "true"
+  },
+  {
+    ".id": "*41",
+    "chain": "hs-auth",
+    "action": "jump",
+    "jump-target": "hs-smtp",
+    "protocol": "tcp",
+    "dst-port": "25",
+    "bytes": "0",
+    "packets": "0",
+    "invalid": "false",
+    "dynamic": "true"
+  },
+  {
+    ".id": "*4",
+    "chain": "unused-hs-chain",
+    "action": "passthrough",
+    "bytes": "0",
+    "packets": "0",
+    "invalid": "false",
+    "dynamic": "false",
+    "disabled": "true",
+    "comment": "place hotspot rules here"
+  },
+  {
+    ".id": "*2",
+    "chain": "srcnat",
+    "action": "masquerade",
+    "out-interface": "WAN",
+    "bytes": "0",
+    "packets": "0",
+    "invalid": "false",
+    "dynamic": "false"
+  },
+  {
+    ".id": "*23",
+    "chain": "srcnat",
+    "action": "masquerade",
+    "out-interface": "WAN",
+    "bytes": "0",
+    "packets": "0",
+    "invalid": "false",
+    "dynamic": "false"
+  },
+  {
+    ".id": "*33",
+    "chain": "hs-unauth",
+    "action": "redirect",
+    "to-ports": "64875",
+    "protocol": "tcp",
+    "in-interface": "BRIDGE-LAN",
+    "dst-port": "443",
+    "bytes": "0",
+    "packets": "0",
+    "invalid": "false",
+    "dynamic": "true"
+  }
+]
+
+## IP Hotspot
+## Command: /ip/hotspot/print
+[
+  {
+    ".id": "*1",
+    "name": "hotspot1",
+    "interface": "BRIDGE-LAN",
+    "address-pool": "pool-hotspot",
+    "profile": "hotspot-profile",
+    "idle-timeout": "5m",
+    "keepalive-timeout": "none",
+    "login-timeout": "none",
+    "addresses-per-mac": "2",
+    "ip-of-dns-name": "10.10.30.1",
+    "proxy-status": "running",
+    "invalid": "false",
+    "HTTPS": "false",
+    "disabled": "false"
+  }
+]
+
+## IP Hotspot Profile
+## Command: /ip/hotspot/profile/print
+[
+  {
+    ".id": "*0",
+    "name": "default",
+    "hotspot-address": "0.0.0.0",
+    "dns-name": "",
+    "html-directory": "hotspot",
+    "html-directory-override": "",
+    "rate-limit": "",
+    "http-proxy": "0.0.0.0:0",
+    "smtp-server": "0.0.0.0",
+    "login-by": "cookie,http-chap",
+    "http-cookie-lifetime": "3d",
+    "split-user-domain": "false",
+    "use-radius": "false",
+    "default": "true"
+  },
+  {
+    ".id": "*1",
+    "name": "hotspot-profile",
+    "hotspot-address": "10.10.30.1",
+    "dns-name": "local.dionit.net",
+    "html-directory": "hotspot",
+    "html-directory-override": "",
+    "rate-limit": "",
+    "http-proxy": "0.0.0.0:0",
+    "smtp-server": "0.0.0.0",
+    "login-by": "cookie,http-chap",
+    "http-cookie-lifetime": "3d",
+    "split-user-domain": "false",
+    "use-radius": "false"
+  }
+]
+
+## IP Hotspot User
+## Command: /ip/hotspot/user/print
+[
+  {
+    ".id": "*0",
+    "name": "default-trial",
+    "uptime": "0s",
+    "bytes-in": "0",
+    "bytes-out": "0",
+    "packets-in": "0",
+    "packets-out": "0",
+    "default": "true",
+    "dynamic": "false",
+    "disabled": "false",
+    "comment": "counters and limits for trial users"
+  },
+  {
+    ".id": "*1",
+    "name": "guest1",
+    "password": "123",
+    "profile": "default",
+    "uptime": "0s",
+    "bytes-in": "0",
+    "bytes-out": "0",
+    "packets-in": "0",
+    "packets-out": "0",
+    "dynamic": "false",
+    "disabled": "false"
+  },
+  {
+    ".id": "*2",
+    "name": "guest2",
+    "password": "123",
+    "profile": "default",
+    "uptime": "0s",
+    "bytes-in": "0",
+    "bytes-out": "0",
+    "packets-in": "0",
+    "packets-out": "0",
+    "dynamic": "false",
+    "disabled": "false"
+  }
+]
+
+## IP Hotspot IP-Binding
+## Command: /ip/hotspot/ip-binding/print
+[
+  {
+    ".id": "*1",
+    "address": "10.10.10.0/24",
+    "type": "bypassed",
+    "bypassed": "true",
+    "disabled": "false",
+    "comment": "Bypass Admin Network"
+  }
+]
+
+## PPP Profiles
+## Command: /ppp/profile/print
+[
+  {
+    ".id": "*0",
+    "name": "default",
+    "use-mpls": "default",
+    "use-compression": "default",
+    "use-encryption": "default",
+    "only-one": "default",
+    "change-tcp-mss": "yes",
+    "use-upnp": "default",
+    "address-list": "",
+    "on-up": "",
+    "on-down": "",
+    "default": "true"
+  },
+  {
+    ".id": "*1",
+    "name": "PAKET-3MB",
+    "local-address": "10.10.20.1",
+    "remote-address": "pool-pppoe",
+    "use-mpls": "default",
+    "use-compression": "default",
+    "use-encryption": "default",
+    "only-one": "default",
+    "change-tcp-mss": "default",
+    "use-upnp": "default",
+    "rate-limit": "3M/3M",
+    "address-list": "",
+    "on-up": "",
+    "on-down": "",
+    "default": "false"
+  },
+  {
+    ".id": "*2",
+    "name": "PAKET-5MB",
+    "local-address": "10.10.20.1",
+    "remote-address": "pool-pppoe",
+    "use-mpls": "default",
+    "use-compression": "default",
+    "use-encryption": "default",
+    "only-one": "default",
+    "change-tcp-mss": "default",
+    "use-upnp": "default",
+    "rate-limit": "5M/5M",
+    "address-list": "",
+    "on-up": "",
+    "on-down": "",
+    "default": "false"
+  },
+  {
+    ".id": "*3",
+    "name": "PAKET-7MB",
+    "local-address": "10.10.20.1",
+    "remote-address": "pool-pppoe",
+    "use-mpls": "default",
+    "use-compression": "default",
+    "use-encryption": "default",
+    "only-one": "default",
+    "change-tcp-mss": "default",
+    "use-upnp": "default",
+    "rate-limit": "7M/7M",
+    "address-list": "",
+    "on-up": "",
+    "on-down": "",
+    "default": "false"
+  },
+  {
+    ".id": "*4",
+    "name": "PAKET-10MB",
+    "local-address": "10.10.20.1",
+    "remote-address": "pool-pppoe",
+    "use-mpls": "default",
+    "use-compression": "default",
+    "use-encryption": "default",
+    "only-one": "default",
+    "change-tcp-mss": "default",
+    "use-upnp": "default",
+    "rate-limit": "10M/10M",
+    "address-list": "",
+    "on-up": "",
+    "on-down": "",
+    "default": "false"
+  },
+  {
+    ".id": "*FFFFFFFE",
+    "name": "default-encryption",
+    "use-mpls": "default",
+    "use-compression": "default",
+    "use-encryption": "yes",
+    "only-one": "default",
+    "change-tcp-mss": "yes",
+    "use-upnp": "default",
+    "address-list": "",
+    "on-up": "",
+    "on-down": "",
+    "default": "true"
+  }
+]
+
+## PPP Secrets
+## Command: /ppp/secret/print
+[
+  {
+    ".id": "*1",
+    "name": "DNT001",
+    "service": "pppoe",
+    "caller-id": "",
+    "password": "123",
+    "profile": "PAKET-3MB",
+    "routes": "",
+    "limit-bytes-in": "0",
+    "limit-bytes-out": "0",
+    "last-logged-out": "jan/01/1970 00:00:00",
+    "disabled": "false"
+  },
+  {
+    ".id": "*2",
+    "name": "DNT002",
+    "service": "pppoe",
+    "caller-id": "",
+    "password": "123",
+    "profile": "PAKET-5MB",
+    "routes": "",
+    "limit-bytes-in": "0",
+    "limit-bytes-out": "0",
+    "last-logged-out": "jan/01/1970 00:00:00",
+    "disabled": "false"
+  },
+  {
+    ".id": "*3",
+    "name": "DNT003",
+    "service": "pppoe",
+    "caller-id": "",
+    "password": "123",
+    "profile": "PAKET-7MB",
+    "routes": "",
+    "limit-bytes-in": "0",
+    "limit-bytes-out": "0",
+    "last-logged-out": "jan/01/1970 00:00:00",
+    "disabled": "false"
+  },
+  {
+    ".id": "*4",
+    "name": "DNT004",
+    "service": "pppoe",
+    "caller-id": "",
+    "password": "123",
+    "profile": "PAKET-10MB",
+    "routes": "",
+    "limit-bytes-in": "0",
+    "limit-bytes-out": "0",
+    "last-logged-out": "jan/01/1970 00:00:00",
+    "disabled": "false"
+  },
+  {
+    ".id": "*5",
+    "name": "DNT005",
+    "service": "pppoe",
+    "caller-id": "",
+    "password": "123",
+    "profile": "PAKET-5MB",
+    "routes": "",
+    "limit-bytes-in": "0",
+    "limit-bytes-out": "0",
+    "last-logged-out": "jan/01/1970 00:00:00",
+    "disabled": "false"
+  }
+]
+
+## PPP Active
+## Command: /ppp/active/print
+[]
+
+## PPPoE Server
+## Command: /interface/pppoe-server/server/print
+[
+  {
+    ".id": "*1",
+    "service-name": "pppoe-rtrw",
+    "interface": "BRIDGE-LAN",
+    "max-mtu": "auto",
+    "max-mru": "auto",
+    "mrru": "disabled",
+    "authentication": "pap,chap,mschap1,mschap2",
+    "keepalive-timeout": "10",
+    "one-session-per-host": "false",
+    "max-sessions": "unlimited",
+    "pado-delay": "0",
+    "default-profile": "default",
+    "invalid": "false",
+    "disabled": "false"
+  }
+]
+
+## IP Routes
+## Command: /ip/route/print
+[
+  {
+    ".id": "*401698E1",
+    "dst-address": "10.10.10.0/24",
+    "pref-src": "10.10.10.1",
+    "gateway": "BRIDGE-LAN",
+    "gateway-status": "BRIDGE-LAN reachable",
+    "distance": "0",
+    "scope": "10",
+    "active": "true",
+    "dynamic": "true",
+    "connect": "true",
+    "disabled": "false"
+  },
+  {
+    ".id": "*401689B3",
+    "dst-address": "10.10.30.0/24",
+    "pref-src": "10.10.30.1",
+    "gateway": "BRIDGE-LAN,wlan1",
+    "gateway-status": "BRIDGE-LAN reachable,wlan1 unreachable",
+    "distance": "0",
+    "scope": "10",
+    "active": "true",
+    "dynamic": "true",
+    "connect": "true",
+    "disabled": "false"
+  }
+]
+
+## System Clock
+## Command: /system/clock/print
+[
+  {
+    "time": "07:20:58",
+    "date": "jan/02/1970",
+    "time-zone-autodetect": "true",
+    "time-zone-name": "Asia/Jakarta",
+    "gmt-offset": "+07:00",
+    "dst-active": "false"
+  }
+]
+
+## Queue Simple
+## Command: /queue/simple/print
+[
+  {
+    ".id": "*2",
+    "name": "hs-<hotspot1>",
+    "target": "BRIDGE-LAN",
+    "parent": "none",
+    "packet-marks": "",
+    "priority": "8/8",
+    "queue": "hotspot-default/hotspot-default",
+    "limit-at": "0/0",
+    "max-limit": "0/0",
+    "burst-limit": "0/0",
+    "burst-threshold": "0/0",
+    "burst-time": "0s/0s",
+    "bucket-size": "0.1/0.1",
+    "bytes": "515459/41465",
+    "total-bytes": "0",
+    "packets": "7180/282",
+    "total-packets": "0",
+    "dropped": "0/0",
+    "total-dropped": "0",
+    "rate": "8928/20776",
+    "total-rate": "0",
+    "packet-rate": "17/5",
+    "total-packet-rate": "0",
+    "queued-packets": "0/0",
+    "total-queued-packets": "0",
+    "queued-bytes": "0/0",
+    "total-queued-bytes": "0",
+    "invalid": "false",
+    "dynamic": "true",
+    "disabled": "false"
+  }
+]
+

@@ -2,19 +2,19 @@
   <div class="modal-overlay" @click.self="close">
     <div class="modal-content">
       <div class="modal-header">
-        <h2 class="modal-title">{{ isEditing ? 'Edit User PPPoE' : 'Tambah User PPPoE Baru' }}</h2>
+        <h2 class="modal-title">{{ isEditing ? '✏️ Edit User PPPoE' : '➕ Tambah User PPPoE Baru' }}</h2>
         <button class="modal-close" @click="close">✕</button>
       </div>
 
       <div class="modal-body">
         <form @submit.prevent="submitForm">
           <div class="form-group">
-            <label for="name">Username *</label>
+            <label class="form-label" for="name">Username <span class="required">*</span></label>
             <input 
               type="text" 
               id="name" 
               v-model="form.name" 
-              class="form-control" 
+              class="form-input" 
               placeholder="Contoh: pppoe-client1"
               required
               :disabled="loading"
@@ -22,12 +22,12 @@
           </div>
 
           <div class="form-group">
-            <label for="password">Password *</label>
+            <label class="form-label" for="password">Password <span class="required">*</span></label>
             <input 
               type="text" 
               id="password" 
               v-model="form.password" 
-              class="form-control" 
+              class="form-input" 
               placeholder="Password Dial-Up PPPoE"
               required
               :disabled="loading"
@@ -35,11 +35,11 @@
           </div>
 
           <div class="form-group">
-            <label for="profile">Profile / Paket Layanan *</label>
+            <label class="form-label" for="profile">Profile / Paket Layanan <span class="required">*</span></label>
             <select 
               id="profile" 
               v-model="form.profile" 
-              class="form-control" 
+              class="form-input" 
               required
               :disabled="loading"
             >
@@ -52,25 +52,25 @@
           </div>
 
           <div class="form-group">
-            <label for="comment">Catatan Tambahan (Opsional)</label>
+            <label class="form-label" for="comment">Catatan Tambahan (Opsional)</label>
             <input 
               type="text" 
               id="comment" 
               v-model="form.comment" 
-              class="form-control" 
+              class="form-input" 
               placeholder="Contoh: Budi - Blok A1 (Belum Lunas)"
               :disabled="loading"
             >
           </div>
-
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="close" :disabled="loading">Batal</button>
-            <button type="submit" class="btn btn-primary" :disabled="loading || !isValid">
-              <span v-if="loading" class="spinner"></span>
-              {{ loading ? 'Menyimpan...' : 'Simpan User' }}
-            </button>
-          </div>
         </form>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" @click="close" :disabled="loading">Batal</button>
+        <button type="button" class="btn btn-primary" @click="submitForm" :disabled="loading || !isValid">
+          <span v-if="loading" class="spinner"></span>
+          {{ loading ? 'Menyimpan...' : 'Simpan User' }}
+        </button>
       </div>
     </div>
   </div>
@@ -142,42 +142,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-/* Inherits modal styles from style.css, specific tweaks for this form */
-.form-group {
-  margin-bottom: 20px;
-}
-
-label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-secondary);
-}
-
-.form-control {
-  width: 100%;
-  padding: 12px 16px;
-  background: var(--bg-input);
-  border: 1px solid var(--border-input);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  font-family: inherit;
-  font-size: 14px;
-  transition: all var(--transition-normal);
-}
-
-.form-control:focus {
-  outline: none;
-  background: var(--bg-input-focus);
-  border-color: var(--border-input-focus);
-  box-shadow: 0 0 0 3px var(--accent-blue-glow);
-}
-
-.form-control:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-</style>

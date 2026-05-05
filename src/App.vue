@@ -1,6 +1,29 @@
 <template>
   <div class="app-container">
-    <!-- Toast Notifications -->
+    <!-- Login Page -->
+    <Login v-if="!isLoggedIn" @login-success="handleLoginSuccess" />
+
+    <!-- Customer Portal (Special view for pelanggan) -->
+    <template v-else-if="currentUser.role === 'pelanggan'">
+      <div class="app-container customer-view">
+        <header class="portal-nav">
+          <div class="logo">MN</div>
+          <div class="portal-title">DIONIT CELL PORTAL</div>
+          <div class="spacer"></div>
+          <div class="user-meta">
+            <span>{{ currentUser.username }}</span>
+            <button class="btn-logout" @click="logout">Keluar</button>
+          </div>
+        </header>
+        <main class="main-content portal">
+          <CustomerPortal />
+        </main>
+      </div>
+    </template>
+
+    <!-- Admin/Technician Layout -->
+    <template v-else>
+      <!-- Toast Notifications -->
     <div class="toast-container" v-if="toasts.length">
       <!-- Removed Emoji from Toast icon, using CSS or text instead -->
       <div
@@ -34,7 +57,7 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
           <span>Dashboard</span>
         </div>
-        <div class="sidebar-item" :class="{ active: activeTab === 'monitoring' }" @click="activeTab = 'monitoring'">
+        <div v-if="currentUser.role === 'admin'" class="sidebar-item" :class="{ active: activeTab === 'monitoring' }" @click="activeTab = 'monitoring'">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
           <span>Realtime Monitoring</span>
         </div>
@@ -48,11 +71,15 @@
           <span>CRM & DUKUNGAN</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
         </div>
-        <div class="sidebar-item" :class="{ active: activeTab === 'invoice' }" @click="activeTab = 'invoice'">
+        <div v-if="currentUser.role === 'admin'" class="sidebar-item" :class="{ active: activeTab === 'customers' }" @click="activeTab = 'customers'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <span>Data Pelanggan</span>
+        </div>
+        <div v-if="currentUser.role === 'admin'" class="sidebar-item" :class="{ active: activeTab === 'invoice' }" @click="activeTab = 'invoice'">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
           <span>Invoice Tagihan</span>
         </div>
-        <div class="sidebar-item" :class="{ active: activeTab === 'packages' }" @click="activeTab = 'packages'">
+        <div v-if="currentUser.role === 'admin'" class="sidebar-item" :class="{ active: activeTab === 'packages' }" @click="activeTab = 'packages'">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
           <span>Paket Internet</span>
         </div>
@@ -68,21 +95,32 @@
         </div>
         <div class="sidebar-item" :class="{ active: activeTab === 'pppoe' }" @click="activeTab = 'pppoe'">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-          <span>PPPoE Management</span>
+          <span>PPPoE Status (Tech)</span>
         </div>
-        <div class="sidebar-item" :class="{ active: activeTab === 'queue' }" @click="activeTab = 'queue'">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-          <span>Queue Management</span>
+
+        <!-- PENGATURAN -->
+        <div v-if="currentUser.role === 'admin'" class="sidebar-section-title" style="margin-top: 12px;">
+          <span>PENGATURAN</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </div>
+        <div v-if="currentUser.role === 'admin'" class="sidebar-item" :class="{ active: activeTab === 'settings' }" @click="activeTab = 'settings'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.32 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Pengaturan Sistem</span>
         </div>
       </div>
 
       <div class="sidebar-footer">
         <div class="sidebar-user" style="display: flex; align-items: center; gap: 10px;">
-          <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--bg-glass); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: var(--accent-blue);">A</div>
-          <div style="display: flex; flex-direction: column;">
-            <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Administrator</span>
-            <span style="font-size: 11px; color: var(--text-muted);">Admin</span>
+          <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--bg-glass); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: var(--accent-blue);">
+            {{ currentUser?.username?.charAt(0).toUpperCase() }}
           </div>
+          <div style="display: flex; flex-direction: column; flex: 1;">
+            <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">{{ currentUser?.username }}</span>
+            <span style="font-size: 11px; color: var(--text-muted);">{{ currentUser?.role?.toUpperCase() }}</span>
+          </div>
+          <button @click="logout" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px;" title="Keluar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          </button>
         </div>
       </div>
     </aside>
@@ -92,7 +130,7 @@
       <!-- Header -->
       <header class="app-header">
         <div class="app-header-left">
-          <div class="toolbar-title">{{ activeTab === 'mikrotik' ? 'Mikrotik Management List' : 'PPPoE Users Management' }}</div>
+          <div class="toolbar-title">{{ pageTitle }}</div>
         </div>
         <div class="header-actions" style="display: flex; gap: 20px; align-items: center;">
           <div class="theme-toggle-wrapper" style="display: flex; align-items: center; gap: 8px;">
@@ -121,6 +159,12 @@
         <Dashboard
           v-if="activeTab === 'dashboard'"
           :mikrotiks="mikrotiks"
+          @navigate="navigateTo"
+        />
+
+        <RealtimeMonitoring
+          v-if="activeTab === 'monitoring'"
+          :mikrotiks="mikrotiks"
         />
 
         <RouterManagement
@@ -141,6 +185,24 @@
           :mikrotiks="mikrotiks"
           @add-toast="addToast"
         />
+
+        <PackageManagement
+          v-if="activeTab === 'packages'"
+          :mikrotiks="mikrotiks"
+        />
+
+        <CustomerManagement
+          v-if="activeTab === 'customers'"
+          :mikrotiks="mikrotiks"
+        />
+
+        <InvoiceManagement
+          v-if="activeTab === 'invoice'"
+        />
+
+        <SystemSettings
+          v-if="activeTab === 'settings'"
+        />
       </main>
     </div>
 
@@ -158,7 +220,7 @@
     <div class="modal-overlay" v-if="showConfirm" @click.self="showConfirm = false">
       <div class="modal-content" style="max-width: 420px;">
         <div class="confirm-dialog">
-          <div class="confirm-title" style="color: var(--status-offline); margin-bottom: 8px;">Hapus Mikrotik?</div>
+          <div class="confirm-title">Hapus Mikrotik?</div>
           <div class="confirm-message">
             Apakah kamu yakin ingin menghapus mikrotik
             <strong>{{ deletingMikrotik?.name }}</strong>?
@@ -174,14 +236,23 @@
         </div>
       </div>
     </div>
+    </template>
   </div>
 </template>
 
 <script>
-import RouterManagement from './components/RouterManagement.vue';
-import RouterForm from './components/RouterForm.vue';
-import PPPoEManagement from './components/PPPoEManagement.vue';
-import Dashboard from './components/Dashboard.vue';
+import RouterManagement from './components/router/RouterManagement.vue';
+import RouterForm from './components/router/RouterForm.vue';
+import PPPoEManagement from './components/pppoe/PPPoEManagement.vue';
+import Dashboard from './components/dashboard/Dashboard.vue';
+import RealtimeMonitoring from './components/dashboard/RealtimeMonitoring.vue';
+import PackageManagement from './components/billing/PackageManagement.vue';
+import CustomerManagement from './components/billing/CustomerManagement.vue';
+import InvoiceManagement from './components/billing/InvoiceManagement.vue';
+import Login from './components/auth/Login.vue';
+import CustomerPortal from './components/portal/CustomerPortal.vue';
+import SystemSettings from './components/settings/SystemSettings.vue';
+import { apiService } from '@/services/api';
 
 export default {
   name: 'App',
@@ -189,11 +260,18 @@ export default {
     RouterManagement,
     RouterForm,
     PPPoEManagement,
-    Dashboard
+    Dashboard,
+    RealtimeMonitoring,
+    PackageManagement,
+    CustomerManagement,
+    InvoiceManagement,
+    Login,
+    CustomerPortal,
+    SystemSettings
   },
   data() {
     return {
-      activeTab: 'mikrotik',
+      activeTab: 'dashboard',
       mikrotiks: [],
       filteredMikrotiks: [],
       loadingMikrotiks: new Set(),
@@ -206,7 +284,9 @@ export default {
       toasts: [],
       toastId: 0,
       searchQuery: '',
-      isLightMode: false
+      isLightMode: false,
+      isLoggedIn: false,
+      currentUser: null
     };
   },
   computed: {
@@ -215,6 +295,19 @@ export default {
     },
     offlineCount() {
       return this.mikrotiks.filter(r => !r.is_connected).length;
+    },
+    pageTitle() {
+      const titles = {
+        dashboard: 'Dashboard Billing',
+        monitoring: 'Realtime Monitoring',
+        map: 'Peta Jaringan',
+        invoice: 'Invoice Tagihan',
+        customers: 'Data Pelanggan',
+        packages: 'Paket Internet',
+        mikrotik: 'Mikrotik Router',
+        pppoe: 'PPPoE Status (Tech)'
+      };
+      return titles[this.activeTab] || 'Dashboard';
     }
   },
   async mounted() {
@@ -225,29 +318,30 @@ export default {
       document.documentElement.setAttribute('data-theme', 'light');
     }
 
-    await this.loadMikrotiks();
-
-    // Listen for auto-connect results from Electron main process
-    if (window.electronAPI?.onAutoConnectResult) {
-      window.electronAPI.onAutoConnectResult((results) => {
-        results.forEach(r => {
-          this.addToast(
-            r.success ? 'success' : 'error',
-            `${r.name}: ${r.message}`
-          );
-        });
-        this.loadMikrotiks();
-      });
-    }
-
-    // Listen for connection updates
-    if (window.electronAPI?.onConnectionUpdate) {
-      window.electronAPI.onConnectionUpdate(() => {
-        this.loadMikrotiks();
-      });
-    }
+    await this.checkAuth();
   },
   methods: {
+    async checkAuth() {
+      const token = localStorage.getItem('auth_token');
+      const savedUser = localStorage.getItem('user');
+      
+      if (token && savedUser) {
+        this.isLoggedIn = true;
+        this.currentUser = JSON.parse(savedUser);
+        await this.loadMikrotiks();
+      }
+    },
+    handleLoginSuccess(user) {
+      this.isLoggedIn = true;
+      this.currentUser = user;
+      this.loadMikrotiks();
+    },
+    logout() {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
+      this.isLoggedIn = false;
+      this.currentUser = null;
+    },
     // ==================
     // Theme Toggle
     // ==================
@@ -262,15 +356,17 @@ export default {
       }
     },
 
+    navigateTo(tab) {
+      this.activeTab = tab;
+    },
+
     // ==================
     // Data Loading
     // ==================
     async loadMikrotiks() {
       try {
-        if (window.electronAPI) {
-          const data = await window.electronAPI.getMikrotiks();
-          this.mikrotiks = data || [];
-        }
+        const data = await apiService.getAllRouters();
+        this.mikrotiks = data || [];
       } catch (err) {
         console.error('Failed to load mikrotiks:', err);
         this.addToast('error', 'Gagal memuat data mikrotik');
@@ -302,11 +398,9 @@ export default {
 
     async saveMikrotik(data) {
       try {
-        if (!window.electronAPI) return;
-
         let result;
         if (this.isEditing) {
-          result = await window.electronAPI.updateMikrotik(this.editingMikrotik.id, data);
+          result = await apiService.updateRouter(this.editingMikrotik.id, data);
           if (result.success) {
             this.addToast('success', `Mikrotik "${data.name}" berhasil diperbarui`);
           } else {
@@ -314,7 +408,7 @@ export default {
             return;
           }
         } else {
-          result = await window.electronAPI.addMikrotik(data);
+          result = await apiService.addRouter(data);
           if (result.success) {
             this.addToast('success', `Mikrotik "${data.name}" berhasil ditambahkan`);
           } else {
@@ -339,11 +433,11 @@ export default {
     },
 
     async deleteMikrotik() {
-      if (!this.deletingMikrotik || !window.electronAPI) return;
+      if (!this.deletingMikrotik) return;
       this.isDeleting = true;
 
       try {
-        const result = await window.electronAPI.deleteMikrotik(this.deletingMikrotik.id);
+        const result = await apiService.deleteRouter(this.deletingMikrotik.id);
 
         if (result.success) {
           this.addToast('success', `Mikrotik "${this.deletingMikrotik.name}" berhasil dihapus`);
@@ -365,12 +459,11 @@ export default {
     // Connectivity
     // ==================
     async connectMikrotik(mikrotik) {
-      if (!window.electronAPI) return;
       this.loadingMikrotiks.add(mikrotik.id);
       this.loadingMikrotiks = new Set(this.loadingMikrotiks);
 
       try {
-        const result = await window.electronAPI.connectMikrotik(mikrotik.id);
+        const result = await apiService.connectRouter(mikrotik.id);
         this.addToast(result.success ? 'success' : 'error', result.message);
         await this.loadMikrotiks();
       } catch (err) {
@@ -383,12 +476,11 @@ export default {
     },
 
     async disconnectMikrotik(mikrotik) {
-      if (!window.electronAPI) return;
       this.loadingMikrotiks.add(mikrotik.id);
       this.loadingMikrotiks = new Set(this.loadingMikrotiks);
 
       try {
-        const result = await window.electronAPI.disconnectMikrotik(mikrotik.id);
+        const result = await apiService.disconnectRouter(mikrotik.id);
         this.addToast(result.success ? 'success' : 'error', result.message);
         await this.loadMikrotiks();
       } catch (err) {
@@ -402,10 +494,7 @@ export default {
 
     async testConnection(data) {
       try {
-        if (window.electronAPI) {
-          return await window.electronAPI.testConnection(data);
-        }
-        return { success: false, message: 'Electron API tidak tersedia' };
+        return await apiService.testConnection(data);
       } catch (err) {
         console.error('Test connection error:', err);
         return { success: false, message: 'Gagal test koneksi' };

@@ -126,6 +126,7 @@ import {
   Filler
 } from 'chart.js';
 import { Line } from 'vue-chartjs';
+import { apiService } from '@/services/api';
 
 ChartJS.register(
   CategoryScale,
@@ -139,7 +140,7 @@ ChartJS.register(
 );
 
 export default {
-  name: 'Dashboard',
+  name: 'RealtimeMonitoring',
   components: {
     Line
   },
@@ -169,13 +170,14 @@ export default {
       currentRx: '0 bps',
       currentTx: '0 bps',
       
-      // Chart Data
-      maxDataPoints: 30, // Show last 30 data points (60 seconds if polled every 2s)
+      maxDataPoints: 30,
       rxDataRaw: [],
       txDataRaw: [],
       chartLabels: [],
       
-      pollingInterval: null
+      _pollTimer: null,
+      _polling: false,
+      _pollVersion: 0
     };
   },
   computed: {
@@ -213,25 +215,16 @@ export default {
       return {
         responsive: true,
         maintainAspectRatio: false,
-        animation: {
-          duration: 0 // Disable animation for smoother realtime effect
-        },
-        interaction: {
-          mode: 'index',
-          intersect: false,
-        },
+        animation: false,
+        interaction: { mode: 'index', intersect: false },
         plugins: {
-          legend: {
-            display: false // We use our custom HTML legend
-          },
+          legend: { display: false },
           tooltip: {
             callbacks: {
-              label: (context) => {
-                let label = context.dataset.label || '';
+              label: (ctx) => {
+                let label = ctx.dataset.label || '';
                 if (label) label += ': ';
-                if (context.parsed.y !== null) {
-                  label += this.formatBytes(context.parsed.y, true); // true = bits
-                }
+                if (ctx.parsed.y !== null) label += this.formatBytes(ctx.parsed.y, true);
                 return label;
               }
             }
@@ -240,25 +233,16 @@ export default {
         scales: {
           x: {
             display: true,
-            grid: {
-              color: 'rgba(255,255,255,0.05)'
-            },
-            ticks: {
-              color: '#8b8e98',
-              maxTicksLimit: 10
-            }
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            ticks: { color: '#8b8e98', maxTicksLimit: 10 }
           },
           y: {
             display: true,
             beginAtZero: true,
-            grid: {
-              color: 'rgba(255,255,255,0.05)'
-            },
+            grid: { color: 'rgba(255,255,255,0.05)' },
             ticks: {
               color: '#8b8e98',
-              callback: (value) => {
-                return this.formatBytes(value, true);
-              }
+              callback: (v) => this.formatBytes(v, true)
             }
           }
         }
@@ -278,10 +262,10 @@ export default {
   },
   methods: {
     formatBytes(bytes, isBits = false) {
-      if (bytes === 0) return '0 ' + (isBits ? 'bps' : 'B');
+      if (!bytes || bytes === 0) return '0 ' + (isBits ? 'bps' : 'B');
       const k = 1024;
       const sizes = isBits ? ['bps', 'Kbps', 'Mbps', 'Gbps'] : ['B', 'KB', 'MB', 'GB'];
-      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      const i = Math.floor(Math.log(Math.abs(bytes)) / Math.log(k));
       return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     },
 
@@ -291,33 +275,31 @@ export default {
       this.selectedInterface = '';
       this.resetChart();
       
-      if (!this.selectedRouterId || !window.electronAPI) return;
+      if (!this.selectedRouterId) return;
       
       this.loading = true;
       try {
-        // Fetch Initial Resources & Interfaces
-        await this.fetchResourceData();
-        const resIfaces = await window.electronAPI.getInterfaces(this.selectedRouterId);
+        const resIfaces = await apiService.getInterfaces(this.selectedRouterId);
         if (resIfaces.success) {
           this.interfaces = resIfaces.data.filter(i => i.type !== 'unknown');
           if (this.interfaces.length > 0) {
-            // Auto select ether1 or the first one
-            const ether = this.interfaces.find(i => i.name.includes('ether1') || i.name.includes('WAN'));
-            this.selectedInterface = ether ? ether.name : this.interfaces[0].name;
+            const wan = this.interfaces.find(i => i.name.includes('WAN') || i.name.includes('ether1'));
+            this.selectedInterface = wan ? wan.name : this.interfaces[0].name;
           }
         }
-        
-        // Start Polling every 2 seconds
         this.startPolling();
       } catch (err) {
-        console.error('Failed init router dashboard', err);
+        console.error('Dashboard init error:', err);
       } finally {
         this.loading = false;
       }
     },
 
     onInterfaceChange() {
+      // FULL restart: stop polling, reset chart, restart with new interface
+      this.stopPolling();
       this.resetChart();
+      this.startPolling();
     },
 
     resetChart() {
@@ -329,66 +311,63 @@ export default {
     },
 
     startPolling() {
-      if (this.pollingInterval) clearInterval(this.pollingInterval);
+      this.stopPolling();
+      this._pollVersion++;
       
-      // Initial fetch
-      this.fetchTrafficData();
+      // Immediate first fetch
+      this.pollOnce();
       
-      this.pollingInterval = setInterval(() => {
-        this.fetchResourceData();
-        this.fetchTrafficData();
-      }, 2000);
+      // Then every 3 seconds
+      this._pollTimer = setInterval(() => this.pollOnce(), 3000);
     },
 
     stopPolling() {
-      if (this.pollingInterval) {
-        clearInterval(this.pollingInterval);
-        this.pollingInterval = null;
+      if (this._pollTimer) {
+        clearInterval(this._pollTimer);
+        this._pollTimer = null;
       }
+      this._polling = false;
     },
 
-    async fetchResourceData() {
-      if (!this.selectedRouterId || !window.electronAPI) return;
+    async pollOnce() {
+      if (this._polling || !this.selectedRouterId) return;
+      
+      // Capture current version — if it changes mid-request, discard results
+      const myVersion = this._pollVersion;
+      
+      this._polling = true;
       try {
-        const res = await window.electronAPI.getSystemResource(this.selectedRouterId);
-        if (res.success && res.data.length > 0) {
-          const r = res.data[0];
-          this.resource.cpuLoad = r['cpu-load'];
-          this.resource.freeMemory = this.formatBytes(parseInt(r['free-memory']));
-          this.resource.totalMemory = this.formatBytes(parseInt(r['total-memory']));
-          this.resource.uptime = r.uptime;
-          this.resource.version = `RouterOS v${r.version}`;
+        const res = await apiService.getDashboardData(this.selectedRouterId, this.selectedInterface);
+        
+        // Discard if user switched interface/router while we were fetching
+        if (myVersion !== this._pollVersion) return;
+        if (!res.success) return;
+        
+        // Update resource
+        const r = res.resource;
+        if (r) {
+          this.resource.cpuLoad = r['cpu-load'] || 0;
+          this.resource.freeMemory = this.formatBytes(parseInt(r['free-memory']) || 0);
+          this.resource.totalMemory = this.formatBytes(parseInt(r['total-memory']) || 0);
+          this.resource.uptime = r.uptime || '';
+          this.resource.version = r.version ? `RouterOS v${r.version}` : '';
         }
-
-        const pppRes = await window.electronAPI.getActivePppoe(this.selectedRouterId);
-        if (pppRes.success) {
-          this.activePppoeCount = pppRes.data.length;
-        }
-      } catch (err) {
-        // ignore occasional timeout
-      }
-    },
-
-    async fetchTrafficData() {
-      if (!this.selectedRouterId || !this.selectedInterface || !window.electronAPI) return;
-      try {
-        const res = await window.electronAPI.getInterfaceTraffic(this.selectedRouterId, this.selectedInterface);
-        if (res.success && res.data.length > 0) {
-          const tr = res.data[0];
-          const rxBits = parseInt(tr['rx-bits-per-second']);
-          const txBits = parseInt(tr['tx-bits-per-second']);
+        
+        this.activePppoeCount = res.activePppoeCount || 0;
+        
+        // Update traffic chart
+        if (res.traffic) {
+          const rxBits = parseInt(res.traffic['rx-bits-per-second']) || 0;
+          const txBits = parseInt(res.traffic['tx-bits-per-second']) || 0;
           
           this.currentRx = this.formatBytes(rxBits, true);
           this.currentTx = this.formatBytes(txBits, true);
-
-          const now = new Date();
-          const timeStr = now.toLocaleTimeString('id-ID', { hour12: false });
-
+          
+          const timeStr = new Date().toLocaleTimeString('id-ID', { hour12: false });
           this.chartLabels.push(timeStr);
           this.rxDataRaw.push(rxBits);
           this.txDataRaw.push(txBits);
-
-          // Keep array size fixed
+          
           if (this.chartLabels.length > this.maxDataPoints) {
             this.chartLabels.shift();
             this.rxDataRaw.shift();
@@ -396,11 +375,14 @@ export default {
           }
         }
       } catch (err) {
-        // ignore
+        // next poll will retry
+      } finally {
+        this._polling = false;
       }
     }
   }
 };
+
 </script>
 
 <style scoped>

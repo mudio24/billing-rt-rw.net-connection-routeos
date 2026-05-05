@@ -225,6 +225,7 @@
 <script>
 import PPPoEForm from './PPPoEForm.vue';
 import PPPoEProfileForm from './PPPoEProfileForm.vue';
+import { apiService } from '@/services/api';
 
 export default {
   name: 'PPPoEManagement',
@@ -283,24 +284,24 @@ export default {
   },
   methods: {
     async loadData() {
-      if (!this.selectedRouterId || !window.electronAPI) return;
+      if (!this.selectedRouterId) return;
       
       this.loading = true;
       try {
         if (this.currentSubTab === 'secrets') {
-          const secRes = await window.electronAPI.getPppoeSecrets(this.selectedRouterId);
+          const secRes = await apiService.getPppoeSecrets(this.selectedRouterId);
           if (secRes.success) this.secrets = secRes.data;
           
-          const profRes = await window.electronAPI.getPppoeProfiles(this.selectedRouterId);
+          const profRes = await apiService.getPppoeProfiles(this.selectedRouterId);
           if (profRes.success) this.profiles = profRes.data;
         } else if (this.currentSubTab === 'active') {
-          const actRes = await window.electronAPI.getActivePppoe(this.selectedRouterId);
+          const actRes = await apiService.getActivePppoe(this.selectedRouterId);
           if (actRes.success) this.activeUsers = actRes.data;
         } else if (this.currentSubTab === 'profiles') {
-          const profRes = await window.electronAPI.getPppoeProfiles(this.selectedRouterId);
+          const profRes = await apiService.getPppoeProfiles(this.selectedRouterId);
           if (profRes.success) this.profiles = profRes.data;
           
-          const poolRes = await window.electronAPI.getIpPools(this.selectedRouterId);
+          const poolRes = await apiService.getIpPools(this.selectedRouterId);
           if (poolRes.success) this.ipPools = poolRes.data.map(p => p.name);
         }
       } catch (err) {
@@ -323,14 +324,13 @@ export default {
     },
 
     async saveSecret(data) {
-      if (!window.electronAPI) return;
       
       try {
         let res;
         if (this.isEditing) {
-          res = await window.electronAPI.updatePppoeSecret(this.selectedRouterId, this.editingSecret['.id'], data);
+          res = await apiService.updatePppoeSecret(this.selectedRouterId, this.editingSecret['.id'], data);
         } else {
-          res = await window.electronAPI.addPppoeSecret(this.selectedRouterId, data);
+          res = await apiService.addPppoeSecret(this.selectedRouterId, data);
         }
 
         if (res.success) {
@@ -350,7 +350,7 @@ export default {
       if (!confirm(`Apakah Anda yakin ingin menghapus user ${name}?`)) return;
       
       try {
-        const res = await window.electronAPI.deletePppoeSecret(this.selectedRouterId, id);
+        const res = await apiService.deletePppoeSecret(this.selectedRouterId, id);
         if (res.success) {
           this.$emit('add-toast', 'success', `User ${name} berhasil dihapus`);
           this.loadData();
@@ -374,14 +374,13 @@ export default {
     },
 
     async saveProfile(data) {
-      if (!window.electronAPI) return;
       this.loading = true;
       try {
         let res;
         if (this.isProfileEditing) {
-          res = await window.electronAPI.updatePppoeProfile(this.selectedRouterId, this.editingProfile['.id'], data);
+          res = await apiService.updatePppoeProfile(this.selectedRouterId, this.editingProfile['.id'], data);
         } else {
-          res = await window.electronAPI.addPppoeProfile(this.selectedRouterId, data);
+          res = await apiService.addPppoeProfile(this.selectedRouterId, data);
         }
 
         if (res.success) {
@@ -401,7 +400,7 @@ export default {
     async deleteProfile(id, name) {
       if (!confirm(`Hapus profile ${name}? Pastikan tidak ada user/secret yang masih menggunakannya!`)) return;
       try {
-        const res = await window.electronAPI.deletePppoeProfile(this.selectedRouterId, id);
+        const res = await apiService.deletePppoeProfile(this.selectedRouterId, id);
         if (res.success) {
           this.$emit('add-toast', 'success', `Profile ${name} dihapus`);
           this.loadData();

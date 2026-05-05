@@ -4,3 +4,5 @@ dist-electron/
 .env
 data/app.db
 *.log
+.wwebjs_auth/
+.wwebjs_cache/

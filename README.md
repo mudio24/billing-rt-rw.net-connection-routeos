@@ -1,83 +1,112 @@
-# Mikrotik Router Management App (Electron + Vue 3)
+# MikroTik ISP Billing & Management System (Vue 3 + Node.js)
 
-Aplikasi desktop profesional untuk mengelola jaringan dan router Mikrotik. Dibangun menggunakan arsitektur modern **Electron**, **Vue.js 3**, dan **MySQL** sebagai sentral penyimpanan database *billing* dan manajemen. Aplikasi ini dirancang agar pengguna dapat melakukan koneksi secara *real-time* ke router Mikrotik menggunakan MikroTik API Service.
+Sistem Informasi Manajemen ISP dan RT/RW Net berskala profesional (Full-Stack Web App) untuk mengelola jaringan Router MikroTik secara menyeluruh. Dibangun menggunakan **Vue.js 3** untuk antarmuka interaktif dan **Node.js (Express)** sebagai *backend server* terpusat, menggantikan arsitektur Electron sebelumnya.
 
-## ✨ Pembaruan Terbaru
-- **Migrasi Database ke MySQL:** Sistem database telah beralih dari SQLite ke **MySQL**, memungkinkan pengelolaan *billing* yang lebih tersentralisasi, stabil, dan bisa diperluas menjadi web-app.
-- **Dashboard & Real-time Monitoring:** Penambahan halaman muka interaktif yang menampilkan *Traffic Graph* (Grafik Bandwidth Rx/Tx) secara mulus *(Realtime)* menggunakan *Vue-Chart.js*, serta status Resource Router (CPU, Memory, Uptime).
-- **PPPoE Management (Hybrid Sync):** Mendukung fitur CRUD untuk *PPPoE User (Secrets)* dan *Service Profiles*. Profil dilengkapi form input *Pricing/Billing* yang tersimpan di MySQL lokal, yang digabungkan otomatis *(hybrid)* dengan konfigurasi riil di Router MikroTik.
-- **Dynamic Datalist IP Pools:** Form IP *Local/Remote Address* dilengkapi *dropdown* cerdas terintegrasi API MikroTik untuk memilih rute IP Pool secara langsung.
+Sistem ini dirancang untuk otomasi ISP penuh: mulai dari sinkronisasi *PPPoE User* langsung ke MikroTik, pembuatan tagihan (*Invoice*) otomatis tiap bulan, pengiriman pesan via *WhatsApp Bot*, hingga pembayaran tagihan *real-time* dengan *Payment Gateway (Xendit)*.
 
-## Fitur Utama Lainnya
+---
 
-- 🌐 **Real-time Connectivity:** Memonitor status online/offline setiap router Mikrotik secara langsung.
-- 🔐 **Secure Storage:** Penyimpanan kredensial secara efisien, mendukung koneksi otomatis saat aplikasi dijalankan.
-- 🎨 **Clean UI/UX:** Desain *Glassmorphism* modern dengan tema gelap *(Dark Mode)* yang terintegrasi penuh. Semua komponen UI dirancang agar nyaman di mata.
-- 🔍 **Pencarian Cepat & Cetak PDF:** Pencarian filter langsung *(Live Search)* untuk menemukan router/user, serta fitur Cetak Laporan Tabel khusus yang membersihkan *Sidebar* ketika masuk ke format kertas/PDF.
-- 🗔 **Zoom Kontrol:** Dukungan fitur memperbesar dan memperkecil UI via shortcut keyboard (`Ctrl +`, `Ctrl -`) dan scroll mouse.
+## ✨ Fitur Unggulan (Core Features)
 
-## Teknologi yang Digunakan
+### 1. ⚙️ Otomatisasi Tagihan & Isolasi (Auto-Billing & Scheduler)
+- **Generate Invoice Otomatis:** Sistem berjalan di *background* (*Cron Job*) yang akan secara otomatis membuat tagihan bulanan baru pada tanggal cetak tagihan pelanggan.
+- **Auto-Isolasi / Suspend:** Mematikan (*disable*) koneksi PPPoE *Secret* langsung di Router MikroTik secara otomatis jika pelanggan belum membayar hingga melewati batas jatuh tempo (Grace Period).
+- **Auto-Aktivasi:** Menghidupkan (*enable*) kembali koneksi internet secara *real-time* begitu pelanggan selesai melakukan pelunasan tagihan.
 
-| Komponen | Teknologi |
+### 2. 💸 Integrasi Payment Gateway (Xendit)
+- Mendukung metode pembayaran modern: **Virtual Account (BCA, Mandiri, BNI, dll)**, **QRIS**, dan **E-Wallet (OVO, DANA, ShopeePay)**.
+- Menggunakan arsitektur *HTTP API Murni* yang di-desain tangguh (*resilient*) dengan mekanisme **Real-time Status Polling** (Fallback Webhook) sehingga konfirmasi lunas terjadi tanpa penundaan (*delay*)—bahkan saat berjalan di *localhost*.
+
+### 3. 🤖 WhatsApp Bot Notification (wwebjs)
+Terintegrasi secara internal dengan WhatsApp Web JS untuk mengirimkan notifikasi:
+- **Pesan Tagihan Baru:** Otomatis dikirim saat invoice di-generate, lengkap dengan link pembayaran (Customer Portal).
+- **Reminder Jatuh Tempo:** Peringatan H-1 atau H-3 sebelum internet diisolasi.
+- **Tanda Terima (Receipt):** Bukti pembayaran lunas akan langsung masuk ke WhatsApp pelanggan.
+
+### 4. 🌐 Customer Portal (Dashboard Pelanggan)
+Halaman khusus terpisah yang dapat diakses oleh pelanggan menggunakan No. HP / Username mereka untuk:
+- Memantau detail paket berlangganan.
+- Melihat status tagihan (Lunas / Menunggu / Overdue).
+- Membayar langsung dengan sekali klik via antarmuka Xendit.
+- Didesain dengan tema modern **Premium Glassmorphism** (responsif di HP dan PC).
+
+### 5. 📈 Real-time MikroTik Monitoring
+- **Traffic Graph:** Pemantauan *bandwidth* antarmuka (Rx/Tx) secara visual dan *real-time* (live) menggunakan *Vue-Chart.js*.
+- **Resource Monitor:** Indikator langsung untuk beban CPU, *Memory*, dan *Uptime* dari multi-router.
+- **Hybrid PPPoE Sync:** Perubahan paket, nama pengguna, atau kata sandi langsung disinkronkan (*push*) ke `/ppp/secret` dan `/ppp/profile` di Mikrotik.
+
+---
+
+## 🛠️ Teknologi Utama
+
+| Bagian | Teknologi / Library |
 | :--- | :--- |
-| **Framework UI** | Vue.js 3 (Vite) |
-| **Desktop Shell** | Electron |
-| **Database** | MySQL Server (via `mysql2`) |
-| **Charting Library** | Chart.js / vue-chartjs |
-| **Styling** | Vanilla CSS (Glassmorphism UI) |
-| **Integrasi API** | MikroTik RouterOS API (`routeros-client`) |
+| **Frontend (UI)** | Vue.js 3, Vite, Vanilla CSS (Glassmorphism), Chart.js |
+| **Backend API** | Node.js, Express.js |
+| **Database** | MySQL (via `mysql2`) |
+| **Authentication** | JWT (JSON Web Token) + Bcrypt |
+| **Router Connect** | MikroTik RouterOS API (`routeros-client`) |
+| **Notifikasi** | WhatsApp Web JS (`whatsapp-web.js`) |
+| **Payment Gateway** | Xendit API |
 
-## Prasyarat (Requirements)
+---
 
-Pastikan di komputermu sudah ter-install:
-1. **Node.js** (rekomendasi: v18 LTS atau v20 LTS)
-2. **NPM** atau **Yarn**
-3. **Database Server MySQL** (Misal: XAMPP, Laragon, MySQL Server) dengan database bernama `mikrotik_manager`.
+## 🚀 Cara Instalasi & Menjalankan (Local Development)
 
-> [!NOTE]
-> Aplikasi ini memerlukan *database* MySQL agar bisa berjalan penuh. Jika tabel MySQL belum tersedia di dalam server lokal Anda, sistem (Node JS / Electron) secara ajaib akan membuatkan seluruh struktur tabel secara otomatis saat aplikasi pertama kali djalankan (*Auto-Migrate*).
+### Prasyarat:
+- **Node.js** (v18 atau v20+)
+- **MySQL Database Server** (XAMPP / Laragon / Native)
+- Akun Xendit (Untuk fitur pembayaran otomatis)
 
-## Instalasi & Cara Menjalankan
+### Langkah Instalasi:
 
-1. Clone repository ini:
+1. **Clone & Install Dependencies**
    ```bash
    git clone https://github.com/mudio24/billing-rt-rw.net-connection-routeos.git
    cd billing-rt-rw.net-connection-routeos
-   ```
-
-2. Jalankan proses install untuk mengunduh semua ekstensi Vue dan Electron:
-   ```bash
    npm install
    ```
 
-3. Setup Database Anda:
-   Buat database kosong bernama `mikrotik_manager` pada MySQL server Anda. Pastikan MySQL berjalan dengan *user* `root` dan tanpa kata sandi (*default* XAMPP/Laragon). Konfigurasi kredensial DB dapat diubah langsung di `electron/services/db-service.js`.
+2. **Konfigurasi Environment (.env)**
+   Buat file `.env` di direktori utama dan sesuaikan konfigurasi Anda:
+   ```env
+   # SERVER
+   PORT=3000
+   PORTAL_URL=http://localhost:5173
 
-4. Jalankan server development (Vite + Electron):
-   ```bash
-   npm run electron:dev
+   # DATABASE MYSQL
+   DB_HOST=127.0.0.1
+   DB_USER=root
+   DB_PASS=
+   DB_NAME=mikrotik_manager
+
+   # SECURITY
+   JWT_SECRET=rahasia_super_aman_anda
+
+   # XENDIT PAYMENT GATEWAY
+   XENDIT_SECRET_KEY=xnd_development_...
+   XENDIT_WEBHOOK_TOKEN=...
+   XENDIT_BASE_URL=https://api.xendit.co
    ```
 
-## Struktur Proyek Utama
+3. **Buat Database**
+   Buat database kosong bernama `mikrotik_manager` pada server MySQL Anda. Skema tabel akan otomatis di-migrate (dibuat) oleh sistem saat backend pertama kali dijalankan.
 
-- `electron/` : Source code *Main Process Electron*, berisi File-file IPC (Inter-Process Communication), API Router MikroTik, dan Engine Database MySQL.
-- `src/` : Kumpulan logika Frontend (Vue.js) yang bertugas merender UI dan grafik chart.
-- `database.sql` : *(Optional)* Skema database manual jika dibutuhkan.
+4. **Jalankan Aplikasi (Concurrent Mode)**
+   Sistem akan secara serentak (*concurrently*) menjalankan **Node.js Backend (Port 3000)** dan **Vue.js Frontend (Port 5173)**:
+   ```bash
+   npm run dev
+   ```
 
-## Build / Produksi
-
-Untuk melakukan proses *packaging* menjadi aplikasi instalable (seperti `.exe` untuk Windows), kamu perlu menyiapkan konfigurasi build melalui `package.json` menggunakan `electron-builder`, lalu jalankan:
-
-```bash
-npm run electron:build
-```
-
-## Troubleshooting Koneksi Mikrotik
-
-Jika mengalami pesan error seperti `ETIMEDOUT: Connection timeout` saat menghubungkan Mikrotik:
-- Cek ketersediaan koneksi jaringan kamu dengan router. Pastikan IP Router bisa di-ping.
-- Pastikan Service **API (port bawaan 8728)** di dalam router Mikrotik sudah berstatus **Enabled**. (Cek di menu `IP` -> `Services`).
-- Jika router terhalang Firewall mikrotik, pastikan *Address List* untuk service API di MikroTik mengizinkan alamat IP Anda.
+5. **Akses Dashboard**
+   - Halaman Admin & Pelanggan: `http://localhost:5173`
+   - *Default Login Admin*: Pertama kali, akan otomatis masuk proses setup / database akan disinkronisasi.
 
 ---
-_dibuat untuk draf skripsi, Bissmillah_
+
+## 📁 Struktur Direktori Utama
+- `server/` : Backend Express.js (Rest API, integrasi MikroTik, Scheduler Cron, WhatsApp Bot, Webhooks Xendit, koneksi Database MySQL).
+- `src/` : Kumpulan logika Frontend Vue.js (Komponen antarmuka, Vue-Router, Axios Interceptors, State Management, CSS Tema Gelap/Glassmorphism).
+
+---
+_Dibuat dan diperbarui untuk tugas akhir / operasional nyata ISP RT/RW Net._
