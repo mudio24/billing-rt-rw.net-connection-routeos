@@ -20,28 +20,27 @@ class BillingService {
   }
 
   async runMigrations() {
-    const migrationFile = path.join(__dirname, '..', 'migrations', '001_billing_tables.sql');
-    if (!fs.existsSync(migrationFile)) {
-      console.log('[Billing] No migration file found, skipping.');
-      return;
-    }
+    const migrationsDir = path.join(__dirname, '..', 'migrations');
+    if (!fs.existsSync(migrationsDir)) return;
 
-    const sql = fs.readFileSync(migrationFile, 'utf8');
+    const files = fs.readdirSync(migrationsDir).filter(f => f.endsWith('.sql')).sort();
     
-    // Split by semicolons but keep SQL intact
-    const statements = sql
-      .replace(/--.*$/gm, '') // remove line comments
-      .split(/;\s*\n/) // split on semicolons followed by newline
-      .map(s => s.trim())
-      .filter(s => s.length > 5); // filter empty or tiny fragments
+    for (const file of files) {
+      const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
+      
+      const statements = sql
+        .replace(/--.*$/gm, '')
+        .split(/;\s*\n/)
+        .map(s => s.trim())
+        .filter(s => s.length > 5);
 
-    for (const stmt of statements) {
-      try {
-        await this.pool.query(stmt);
-      } catch (err) {
-        // Ignore "already exists" and "duplicate" errors
-        if (err.code !== 'ER_TABLE_EXISTS_ERROR' && err.code !== 'ER_DUP_ENTRY') {
-          console.error('[Billing] Migration error:', err.message, '\nStatement:', stmt.substring(0, 80));
+      for (const stmt of statements) {
+        try {
+          await this.pool.query(stmt);
+        } catch (err) {
+          if (err.code !== 'ER_TABLE_EXISTS_ERROR' && err.code !== 'ER_DUP_ENTRY') {
+            console.error(`[Billing] Migration error in ${file}:`, err.message, '\nStatement:', stmt.substring(0, 80));
+          }
         }
       }
     }
@@ -106,9 +105,10 @@ class BillingService {
   }
 
   async createPackage(data) {
+    const isActive = data.is_active !== false;
     const [result] = await this.pool.execute(
-      'INSERT INTO packages (name, pppoe_profile, speed_up, speed_down, price, description) VALUES (?, ?, ?, ?, ?, ?)',
-      [data.name, data.pppoe_profile, data.speed_up, data.speed_down, data.price, data.description || null]
+      'INSERT INTO packages (name, pppoe_profile, speed_up, speed_down, price, description, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [data.name, data.pppoe_profile, data.speed_up, data.speed_down, data.price, data.description || null, isActive]
     );
     return result.insertId;
   }
@@ -370,19 +370,30 @@ class BillingService {
     const pkg = await this.getPackageById(customer.package_id);
     if (!pkg) throw new Error('Paket tidak ditemukan');
 
-    // Check duplicate invoice for this month
-    const now = new Date();
-    const periodStart = new Date(now.getFullYear(), now.getMonth(), customer.billing_date);
-    const periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, customer.billing_date - 1);
+    // Period start is the anniversary date
+    // If we are generating this in advance (e.g. today 23rd for 30th), 
+    // we need to find the correct anniversary date.
+    let targetYear = now.getFullYear();
+    let targetMonth = now.getMonth();
+    
+    // If today's day is > customer's billing date, the anniversary is next month
+    // (e.g. today is 25th, billing date is 1st)
+    if (now.getDate() > customer.billing_date) {
+      targetMonth++;
+    }
+    
+    const periodStart = new Date(targetYear, targetMonth, customer.billing_date);
+    const periodEnd = new Date(targetYear, targetMonth + 1, customer.billing_date - 1);
 
     const [existing] = await this.pool.execute(
       'SELECT id FROM invoices WHERE customer_id = ? AND period_start = ? AND status != ?',
       [customerId, periodStart.toISOString().split('T')[0], 'cancelled']
     );
-    if (existing.length > 0) throw new Error('Invoice bulan ini sudah ada');
-
+    const dueDays = parseInt(await this.getSetting('billing_due_days') || '0');
     const dueDate = new Date(periodStart);
-    dueDate.setDate(dueDate.getDate() + 7); // Due 7 hari setelah terbit
+    if (dueDays > 0) {
+      dueDate.setDate(dueDate.getDate() + dueDays);
+    }
 
     const invoiceNumber = await this.generateInvoiceNumber();
 
@@ -416,6 +427,10 @@ class BillingService {
     if (filters.status) {
       query += ' AND i.status = ?';
       params.push(filters.status);
+    }
+    if (filters.invoice_number) {
+      query += ' AND i.invoice_number = ?';
+      params.push(filters.invoice_number);
     }
 
     query += ' ORDER BY i.created_at DESC';
@@ -481,13 +496,15 @@ class BillingService {
   }
 
   async getCustomersDueTodayForBilling() {
-    const today = new Date().getDate();
+    // Logic: find customers whose billing_date is X days from now (Lead Time from settings)
+    const leadDays = parseInt(await this.getSetting('invoice_lead_days') || '7'); 
     const [rows] = await this.pool.execute(`
       SELECT c.*, p.name as package_name, p.price as package_price
       FROM customers c
       LEFT JOIN packages p ON c.package_id = p.id
-      WHERE c.billing_date = ? AND c.status = 'active'
-    `, [today]);
+      WHERE c.billing_date = DAY(DATE_ADD(CURDATE(), INTERVAL ? DAY)) 
+      AND c.status = 'active'
+    `, [leadDays]);
     return rows;
   }
 
@@ -565,6 +582,146 @@ class BillingService {
       pendingInvoices: pendingInvoices[0].count,
       overdueInvoices: overdueInvoices[0].count
     };
+  }
+
+  // ==========================================
+  // REVENUE ANALYTICS
+  // ==========================================
+
+  /**
+   * Revenue summary: totals for paid, pending, overdue within a date range
+   */
+  async getRevenueSummary(from, to) {
+    const [paid] = await this.pool.execute(
+      `SELECT COALESCE(SUM(amount), 0) as total, COUNT(*) as count
+       FROM invoices WHERE status = 'paid' AND paid_at >= ? AND paid_at <= ?`,
+      [from, to + ' 23:59:59']
+    );
+    const [paidToday] = await this.pool.execute(
+      `SELECT COALESCE(SUM(amount), 0) as total, COUNT(*) as count
+       FROM invoices WHERE status = 'paid' AND DATE(paid_at) = CURDATE()`
+    );
+    const [pending] = await this.pool.execute(
+      `SELECT COALESCE(SUM(amount), 0) as total, COUNT(*) as count
+       FROM invoices WHERE status = 'pending'`
+    );
+    const [overdue] = await this.pool.execute(
+      `SELECT COALESCE(SUM(amount), 0) as total, COUNT(*) as count
+       FROM invoices WHERE status = 'overdue'`
+    );
+    return {
+      paid: { total: paid[0].total, count: paid[0].count },
+      paidToday: { total: paidToday[0].total, count: paidToday[0].count },
+      pending: { total: pending[0].total, count: pending[0].count },
+      overdue: { total: overdue[0].total, count: overdue[0].count }
+    };
+  }
+
+  /**
+   * Daily revenue breakdown within a date range
+   */
+  async getRevenueDaily(from, to) {
+    const [rows] = await this.pool.execute(
+      `SELECT DATE(paid_at) as date, SUM(amount) as total, COUNT(*) as count
+       FROM invoices WHERE status = 'paid' AND paid_at >= ? AND paid_at <= ?
+       GROUP BY DATE(paid_at) ORDER BY date ASC`,
+      [from, to + ' 23:59:59']
+    );
+    return rows;
+  }
+
+  /**
+   * Revenue breakdown by package
+   */
+  async getRevenueByPackage(from, to) {
+    const [rows] = await this.pool.execute(
+      `SELECT p.name as package_name, SUM(i.amount) as total, COUNT(*) as count
+       FROM invoices i
+       LEFT JOIN packages p ON i.package_id = p.id
+       WHERE i.status = 'paid' AND i.paid_at >= ? AND i.paid_at <= ?
+       GROUP BY i.package_id, p.name ORDER BY total DESC`,
+      [from, to + ' 23:59:59']
+    );
+    return rows;
+  }
+
+  /**
+   * Revenue breakdown by payment method
+   */
+  async getRevenueByMethod(from, to) {
+    const [rows] = await this.pool.execute(
+      `SELECT COALESCE(paid_via, 'unknown') as method, SUM(amount) as total, COUNT(*) as count
+       FROM invoices WHERE status = 'paid' AND paid_at >= ? AND paid_at <= ?
+       GROUP BY paid_via ORDER BY total DESC`,
+      [from, to + ' 23:59:59']
+    );
+    return rows;
+  }
+
+  /**
+   * Recent payment transactions with filters
+   */
+  async getRevenueTransactions(filters = {}) {
+    let query = `
+      SELECT i.id, i.invoice_number, i.amount, i.status, i.paid_at, i.paid_via, i.due_date, i.created_at,
+             c.name as customer_name, c.phone as customer_phone,
+             p.name as package_name
+      FROM invoices i
+      LEFT JOIN customers c ON i.customer_id = c.id
+      LEFT JOIN packages p ON i.package_id = p.id
+      WHERE 1=1
+    `;
+    const params = [];
+
+    if (filters.from) {
+      query += ' AND i.created_at >= ?';
+      params.push(filters.from);
+    }
+    if (filters.to) {
+      query += ' AND i.created_at <= ?';
+      params.push(filters.to + ' 23:59:59');
+    }
+    if (filters.status) {
+      query += ' AND i.status = ?';
+      params.push(filters.status);
+    }
+    if (filters.method) {
+      if (filters.method === 'xendit') {
+        query += ' AND i.paid_via LIKE ?';
+        params.push('Xendit%');
+      } else {
+        query += ' AND i.paid_via = ?';
+        params.push(filters.method);
+      }
+    }
+
+    query += ' ORDER BY i.created_at DESC LIMIT 100';
+
+    const [rows] = await this.pool.execute(query, params);
+    return rows;
+  }
+
+  // ============================================
+  // WHATSAPP TEMPLATES
+  // ============================================
+
+  async getWaTemplates() {
+    const [rows] = await this.pool.execute('SELECT * FROM wa_templates ORDER BY created_at ASC');
+    return rows;
+  }
+
+  async getWaTemplate(id) {
+    const [rows] = await this.pool.execute('SELECT * FROM wa_templates WHERE id = ?', [id]);
+    return rows.length ? rows[0] : null;
+  }
+
+  async updateWaTemplate(id, data) {
+    const { nama_template, isi_pesan } = data;
+    await this.pool.execute(
+      'UPDATE wa_templates SET nama_template = ?, isi_pesan = ? WHERE id = ?',
+      [nama_template, isi_pesan, id]
+    );
+    return this.getWaTemplate(id);
   }
 }
 

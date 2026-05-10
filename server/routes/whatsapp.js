@@ -47,4 +47,87 @@ router.post('/logout', requireAuth, requireRole('admin'), async (req, res) => {
   }
 });
 
+// ============================================
+// TEMPLATES & BROADCAST
+// ============================================
+
+const billingService = require('../services/billing-service');
+
+// GET /api/whatsapp/templates
+router.get('/templates', requireAuth, requireRole('admin'), async (req, res) => {
+  try {
+    const templates = await billingService.getWaTemplates();
+    res.json({ success: true, data: templates });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// PUT /api/whatsapp/templates/:id
+router.put('/templates/:id', requireAuth, requireRole('admin'), async (req, res) => {
+  try {
+    const updated = await billingService.updateWaTemplate(req.params.id, req.body);
+    res.json({ success: true, data: updated });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/whatsapp/broadcast
+router.post('/broadcast', requireAuth, requireRole('admin'), async (req, res) => {
+  try {
+    const { templateId, message, targets } = req.body;
+    
+    // targets could be 'all', 'active', 'suspended'
+    let customers = [];
+    if (targets === 'all' || targets === 'active' || targets === 'suspended') {
+       const allCusts = await billingService.getCustomers();
+       if (targets === 'all') customers = allCusts;
+       else customers = allCusts.filter(c => c.status === targets);
+    }
+
+    if (customers.length === 0) {
+      return res.json({ success: false, error: 'Tidak ada target pelanggan yang sesuai kriteria.' });
+    }
+
+    if (!whatsappBot.isReady) {
+      return res.json({ success: false, error: 'WhatsApp bot belum terhubung.' });
+    }
+
+    // In a real production app, this should be a queue system.
+    // For now, we process it asynchronously in the background.
+    res.json({ 
+      success: true, 
+      message: `Broadcast sedang diproses ke ${customers.length} pelanggan.` 
+    });
+
+    // Background processing
+    setTimeout(async () => {
+      for (const customer of customers) {
+        if (!customer.phone) continue;
+        
+        // Parse message variables
+        let finalMessage = message
+          .replace(/\{\{name\}\}/g, customer.name)
+          .replace(/\{\{company\}\}/g, 'DIONIT CELL')
+          // other vars might not be available in a general broadcast context 
+          // unless we fetch the latest invoice, but for promo/maintenance this is enough
+          ;
+          
+        try {
+          await whatsappBot.sendMessage(customer.phone, finalMessage);
+          // Wait 2-5 seconds between messages to avoid ban
+          await new Promise(r => setTimeout(r, 2000 + Math.random() * 3000));
+        } catch (err) {
+          console.error(`[Broadcast] Failed to send to ${customer.name}: ${err.message}`);
+        }
+      }
+      console.log(`[Broadcast] Completed sending to ${customers.length} customers.`);
+    }, 1000);
+
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 module.exports = router;

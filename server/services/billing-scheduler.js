@@ -17,37 +17,78 @@ class BillingScheduler {
   }
 
   /**
+   * Parse HH:MM into a node-cron expression (MM HH * * *)
+   */
+  timeToCron(timeString) {
+    if (!timeString || !timeString.includes(':')) return null;
+    const [hh, mm] = timeString.split(':');
+    return `${parseInt(mm)} ${parseInt(hh)} * * *`;
+  }
+
+  /**
+   * Stop all current jobs
+   */
+  stopJobs() {
+    for (const key in this.jobs) {
+      if (this.jobs[key]) {
+        this.jobs[key].stop();
+      }
+    }
+    this.jobs = {};
+  }
+
+  /**
    * Initialize scheduler with required services
    */
-  init(mikrotikService, whatsappBot = null) {
+  async init(mikrotikService, whatsappBot = null) {
     this.mikrotikService = mikrotikService;
     this.whatsappBot = whatsappBot;
+    await this.loadSchedules();
+  }
 
-    // ─── Job 1: Auto-generate invoices every day at 00:05 ───
-    this.jobs.generateInvoices = cron.schedule('5 0 * * *', async () => {
+  /**
+   * Reload schedules from settings and restart jobs
+   */
+  async reloadSchedules() {
+    console.log('[Scheduler] Reloading schedules...');
+    this.stopJobs();
+    await this.loadSchedules();
+  }
+
+  /**
+   * Load schedules from DB and start node-cron
+   */
+  async loadSchedules() {
+    const timeGenerate = await billingService.getSetting('schedule_generate_invoice') || '00:05';
+    const timeOverdue = await billingService.getSetting('schedule_check_overdue') || '08:00';
+    const timeSuspend = await billingService.getSetting('schedule_auto_suspend') || '09:00';
+    const timeReminder = await billingService.getSetting('schedule_send_reminders') || '10:00';
+
+    // ─── Job 1: Auto-generate invoices ───
+    this.jobs.generateInvoices = cron.schedule(this.timeToCron(timeGenerate), async () => {
       console.log('[Scheduler] Running: Auto-generate invoices...');
       await this.runInvoiceGeneration();
     }, { timezone: 'Asia/Jakarta' });
 
-    // ─── Job 2: Check overdue invoices every day at 08:00 ───
-    this.jobs.checkOverdue = cron.schedule('0 8 * * *', async () => {
+    // ─── Job 2: Check overdue invoices ───
+    this.jobs.checkOverdue = cron.schedule(this.timeToCron(timeOverdue), async () => {
       console.log('[Scheduler] Running: Check overdue invoices...');
       await this.runOverdueCheck();
     }, { timezone: 'Asia/Jakarta' });
 
-    // ─── Job 3: Auto-suspend overdue customers every day at 09:00 ───
-    this.jobs.autoSuspend = cron.schedule('0 9 * * *', async () => {
+    // ─── Job 3: Auto-suspend overdue customers ───
+    this.jobs.autoSuspend = cron.schedule(this.timeToCron(timeSuspend), async () => {
       console.log('[Scheduler] Running: Auto-suspend overdue customers...');
       await this.runAutoSuspend();
     }, { timezone: 'Asia/Jakarta' });
 
-    // ─── Job 4: Send payment reminders at 10:00 daily ───
-    this.jobs.sendReminders = cron.schedule('0 10 * * *', async () => {
+    // ─── Job 4: Send payment reminders ───
+    this.jobs.sendReminders = cron.schedule(this.timeToCron(timeReminder), async () => {
       console.log('[Scheduler] Running: Send payment reminders...');
       await this.runPaymentReminders();
     }, { timezone: 'Asia/Jakarta' });
 
-    console.log('[Scheduler] All billing jobs scheduled (Asia/Jakarta timezone)');
+    console.log(`[Scheduler] Jobs scheduled (WIB) - Generate: ${timeGenerate}, Overdue: ${timeOverdue}, Suspend: ${timeSuspend}, Reminders: ${timeReminder}`);
   }
 
   /**
@@ -200,21 +241,49 @@ class BillingScheduler {
   }
 
   // ─── WhatsApp Message Builders ───
+  
+  async getTemplate(code) {
+    try {
+      const [rows] = await billingService.pool.execute(
+        'SELECT isi_pesan FROM wa_templates WHERE kode_template = ?', 
+        [code]
+      );
+      return rows.length ? rows[0].isi_pesan : null;
+    } catch (err) {
+      console.error(`[Scheduler] Failed to get template ${code}:`, err.message);
+      return null;
+    }
+  }
+
+  parseTemplate(text, data) {
+    if (!text) return '';
+    let parsed = text;
+    Object.keys(data).forEach(key => {
+      const placeholder = new RegExp(`{{${key}}}`, 'g');
+      parsed = parsed.replace(placeholder, data[key]);
+    });
+    return parsed;
+  }
 
   async sendInvoiceNotification(customer, invoice) {
     const portalUrl = process.env.PORTAL_URL || 'http://localhost:5173';
     const companyName = await billingService.getSetting('company_name') || 'DIONIT CELL';
     
-    const message = `🧾 *TAGIHAN INTERNET ${companyName}*\n\n` +
-      `Halo *${customer.name}*,\n` +
-      `Tagihan internet Anda telah terbit.\n\n` +
-      `📋 No. Invoice: *${invoice.invoiceNumber}*\n` +
-      `💰 Total: *Rp ${Number(invoice.amount).toLocaleString('id-ID')}*\n` +
-      `📅 Jatuh Tempo: *${new Date(invoice.dueDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}*\n\n` +
-      `Segera lakukan pembayaran pada link berikut:\n` +
-      `🔗 ${portalUrl}\n\n` +
-      `Pastikan tetap terhubung dalam jaringan WiFi Anda untuk melakukan pembayaran.\n\n` +
-      `Terima kasih 🙏\n_${companyName}_`;
+    let template = await this.getTemplate('tagihan_baru');
+    
+    const data = {
+      name: customer.name,
+      company: companyName,
+      invoice_number: invoice.invoiceNumber,
+      package: customer.package_name,
+      period: `${new Date(invoice.periodStart).toLocaleDateString('id-ID', {month:'long'})} ${new Date(invoice.periodStart).getFullYear()}`,
+      amount: Number(invoice.amount).toLocaleString('id-ID'),
+      due_date: new Date(invoice.dueDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+      payment_link: portalUrl
+    };
+
+    const message = template ? this.parseTemplate(template, data) : 
+      `🧾 *TAGIHAN INTERNET ${companyName}*\n\nHalo *${customer.name}*,\nTagihan Anda: *${invoice.invoiceNumber}* sebesar *Rp ${data.amount}*.\nJatuh tempo: *${data.due_date}*.\nBayar di: ${portalUrl}`;
 
     try {
       await this.whatsappBot.sendMessage(customer.phone, message);
@@ -228,19 +297,19 @@ class BillingScheduler {
     const companyName = await billingService.getSetting('company_name') || 'DIONIT CELL';
     const portalUrl = process.env.PORTAL_URL || 'http://localhost:5173';
     
-    let urgency = '';
-    if (daysUntilDue === 0) urgency = '⚠️ *HARI INI JATUH TEMPO!*';
-    else if (daysUntilDue === 1) urgency = '⏰ *BESOK JATUH TEMPO!*';
-    else urgency = `📅 *${daysUntilDue} hari lagi jatuh tempo*`;
+    let template = await this.getTemplate('reminder_isolir');
+    
+    const data = {
+      name: invoice.customer_name,
+      company: companyName,
+      invoice_number: invoice.invoice_number,
+      amount: Number(invoice.amount).toLocaleString('id-ID'),
+      due_date: new Date(invoice.due_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+      payment_link: portalUrl
+    };
 
-    const message = `🔔 *PENGINGAT PEMBAYARAN*\n${urgency}\n\n` +
-      `Halo *${invoice.customer_name}*,\n` +
-      `Tagihan internet Anda belum dibayar.\n\n` +
-      `📋 No. Invoice: *${invoice.invoice_number}*\n` +
-      `💰 Total: *Rp ${Number(invoice.amount).toLocaleString('id-ID')}*\n` +
-      `📅 Jatuh Tempo: *${new Date(invoice.due_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}*\n\n` +
-      `Bayar sekarang:\n🔗 ${portalUrl}\n\n` +
-      `_Abaikan jika sudah membayar._\n_${companyName}_`;
+    const message = template ? this.parseTemplate(template, data) : 
+      `🔔 *PENGINGAT PEMBAYARAN*\nHalo *${invoice.customer_name}*,\nTagihan *${invoice.invoice_number}* sebesar *Rp ${data.amount}* belum dibayar.\nJatuh tempo: *${data.due_date}*.\nBayar di: ${portalUrl}`;
 
     try {
       await this.whatsappBot.sendMessage(invoice.customer_phone, message);
@@ -253,6 +322,7 @@ class BillingScheduler {
     const companyName = await billingService.getSetting('company_name') || 'DIONIT CELL';
     const portalUrl = process.env.PORTAL_URL || 'http://localhost:5173';
 
+    // We don't have a specific suspend template in SQL yet, using reminder as fallback or hardcoded
     const message = `🚫 *LAYANAN INTERNET DIISOLIR*\n\n` +
       `Halo *${customer.name}*,\n` +
       `Layanan internet Anda telah *diisolir* karena tagihan melewati batas waktu pembayaran.\n\n` +
@@ -260,7 +330,6 @@ class BillingScheduler {
       `💰 Total: *Rp ${Number(invoice.amount).toLocaleString('id-ID')}*\n\n` +
       `Segera lakukan pembayaran untuk mengaktifkan kembali layanan:\n` +
       `🔗 ${portalUrl}\n\n` +
-      `Layanan akan *otomatis aktif* setelah pembayaran dikonfirmasi.\n\n` +
       `_${companyName}_`;
 
     try {

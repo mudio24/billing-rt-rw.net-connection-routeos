@@ -16,6 +16,17 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET /api/packages/:id
+router.get('/:id', async (req, res) => {
+  try {
+    const data = await billingService.getPackageById(req.params.id);
+    if (!data) return res.status(404).json({ success: false, error: 'Paket tidak ditemukan' });
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // POST /api/packages
 router.post('/', async (req, res) => {
   try {

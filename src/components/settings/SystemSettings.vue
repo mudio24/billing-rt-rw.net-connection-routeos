@@ -3,7 +3,7 @@
     <div class="panel-header">
       <div class="header-left">
         <h2>Pengaturan Sistem</h2>
-        <p>Kelola konfigurasi billing, scheduler, dan integrasi WhatsApp Bot.</p>
+        <p>Kelola konfigurasi billing dan scheduler otomatis.</p>
       </div>
     </div>
 
@@ -20,21 +20,35 @@
               <label>Nama Perusahaan</label>
               <span>Ditampilkan di invoice dan notifikasi WA</span>
             </div>
-            <input v-model="settings.company_name" type="text" @change="saveSetting('company_name', settings.company_name)" placeholder="DIONIT CELL">
+            <input v-model="settings.company_name" type="text" placeholder="DIONIT CELL">
           </div>
           <div class="setting-row">
             <div class="setting-info">
               <label>No. WA Admin</label>
               <span>Nomor yang bisa dihubungi pelanggan</span>
             </div>
-            <input v-model="settings.company_phone" type="text" @change="saveSetting('company_phone', settings.company_phone)" placeholder="628xxx">
+            <input v-model="settings.company_phone" type="text" placeholder="628xxx">
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <label>Jarak Terbit Invoice (Hari)</label>
+              <span>Muncul H-X hari sebelum tanggal langganan</span>
+            </div>
+            <input v-model="settings.invoice_lead_days" type="number" min="0" max="30">
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <label>Jarak Jatuh Tempo (Hari)</label>
+              <span>Batas bayar (0 = Pas tanggal langganan)</span>
+            </div>
+            <input v-model="settings.billing_due_days" type="number" min="0" max="30">
           </div>
           <div class="setting-row">
             <div class="setting-info">
               <label>Grace Period (Hari)</label>
               <span>Toleransi setelah jatuh tempo sebelum isolir</span>
             </div>
-            <input v-model="settings.billing_grace_days" type="number" min="0" max="30" @change="saveSetting('billing_grace_days', settings.billing_grace_days)">
+            <input v-model="settings.billing_grace_days" type="number" min="0" max="30">
           </div>
           <div class="setting-row">
             <div class="setting-info">
@@ -47,101 +61,14 @@
             </label>
           </div>
         </div>
+        <button class="btn-wa-green" style="margin-top:20px; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" @click="saveAllSettings" :disabled="isSaving">
+          <span v-if="isSaving" class="loading-spinner"></span>
+          <svg v-if="!isSaving" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+          {{ isSaving ? 'Menyimpan...' : 'Simpan Pengaturan' }}
+        </button>
       </div>
 
-      <!-- Scheduler Card -->
-      <div class="card">
-        <div class="card-title">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          <span>Scheduler Otomatis</span>
-        </div>
-        <div class="scheduler-info">
-          <p class="desc">Job scheduler berjalan otomatis setiap hari sesuai jadwal berikut (WIB):</p>
-          <div class="schedule-list">
-            <div class="schedule-item">
-              <span class="time">00:05</span>
-              <span class="job">Auto-generate invoice</span>
-            </div>
-            <div class="schedule-item">
-              <span class="time">08:00</span>
-              <span class="job">Cek invoice jatuh tempo</span>
-            </div>
-            <div class="schedule-item">
-              <span class="time">09:00</span>
-              <span class="job">Auto-isolir pelanggan</span>
-            </div>
-            <div class="schedule-item">
-              <span class="time">10:00</span>
-              <span class="job">Kirim pengingat WA</span>
-            </div>
-          </div>
-        </div>
-        <div class="scheduler-actions">
-          <button class="btn btn-secondary" @click="runInvoices" :disabled="runningJob">
-            {{ runningJob === 'invoices' ? 'Memproses...' : '▶ Generate Invoice Manual' }}
-          </button>
-          <button class="btn btn-secondary" @click="runSuspend" :disabled="runningJob">
-            {{ runningJob === 'suspend' ? 'Memproses...' : '▶ Jalankan Auto-Isolir' }}
-          </button>
-        </div>
-      </div>
 
-      <!-- WhatsApp Bot Card -->
-      <div class="card card-full">
-        <div class="card-title">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-          <span>WhatsApp Bot</span>
-          <span class="badge" :class="waStatus">{{ waStatusText }}</span>
-        </div>
-        
-        <div class="wa-content">
-          <div v-if="waData.status === 'disconnected' || waData.status === null" class="wa-disconnected">
-            <p>Bot WhatsApp belum aktif. Klik tombol di bawah untuk mulai pairing.</p>
-            <button class="btn btn-primary" @click="initWA" :disabled="waLoading">
-              {{ waLoading ? 'Menginisialisasi...' : 'Aktifkan Bot WhatsApp' }}
-            </button>
-          </div>
-
-          <div v-else-if="waData.status === 'qr_pending'" class="wa-qr">
-            <p>Scan QR Code ini dengan WhatsApp Anda:</p>
-            <div class="qr-wrapper">
-              <img :src="waData.qrCode" alt="QR Code WhatsApp" v-if="waData.qrCode">
-              <div v-else class="qr-loading">Generating QR...</div>
-            </div>
-            <p class="qr-hint">Buka WhatsApp > Menu > Linked Devices > Link a Device</p>
-          </div>
-
-          <div v-else-if="waData.status === 'ready'" class="wa-ready">
-            <div class="wa-connected-badge">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-              <span>WhatsApp Bot Aktif & Terhubung</span>
-            </div>
-
-            <div class="wa-test-form">
-              <h4>Test Kirim Pesan</h4>
-              <div class="test-row">
-                <input v-model="testPhone" type="text" placeholder="Nomor WA (628xxx)">
-                <input v-model="testMessage" type="text" placeholder="Pesan test...">
-                <button class="btn btn-primary btn-sm" @click="sendTest" :disabled="sending">
-                  {{ sending ? 'Mengirim...' : 'Kirim' }}
-                </button>
-              </div>
-              <div v-if="testResult" class="test-result" :class="{ success: testResult.success }">
-                {{ testResult.success ? '✅ Pesan terkirim!' : '❌ Gagal: ' + testResult.error }}
-              </div>
-            </div>
-
-            <button class="btn btn-secondary btn-sm" @click="logoutWA" style="margin-top: 16px;">
-              Logout & Putuskan Bot
-            </button>
-          </div>
-
-          <div v-else class="wa-loading">
-            <span class="spinner"></span>
-            <p>Status: {{ waData.status }}...</p>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -156,44 +83,18 @@ export default {
       settings: {
         company_name: '',
         company_phone: '',
+        invoice_lead_days: '7',
+        billing_due_days: '0',
         billing_grace_days: '3',
         auto_suspend: 'true',
         invoice_prefix: 'INV'
       },
-      waData: { status: null, qrCode: null },
-      waLoading: false,
-      waPolling: null,
-      testPhone: '',
-      testMessage: 'Test pesan dari DIONIT CELL Billing System 🧾',
-      testResult: null,
-      sending: false,
-      runningJob: null
+      runningJob: null,
+      isSaving: false
     };
-  },
-  computed: {
-    waStatus() {
-      const s = this.waData.status;
-      if (s === 'ready') return 'online';
-      if (s === 'qr_pending' || s === 'authenticated') return 'warning';
-      return 'offline';
-    },
-    waStatusText() {
-      const map = {
-        disconnected: 'Tidak Terhubung',
-        qr_pending: 'Menunggu Scan QR',
-        authenticated: 'Terautentikasi',
-        ready: 'Aktif',
-        null: 'Tidak Aktif'
-      };
-      return map[this.waData.status] || this.waData.status;
-    }
   },
   async mounted() {
     await this.loadSettings();
-    await this.loadWAStatus();
-  },
-  beforeUnmount() {
-    if (this.waPolling) clearInterval(this.waPolling);
   },
   methods: {
     async loadSettings() {
@@ -216,85 +117,29 @@ export default {
     toggleAutoSuspend(e) {
       const val = e.target.checked ? 'true' : 'false';
       this.settings.auto_suspend = val;
-      this.saveSetting('auto_suspend', val);
     },
-    async loadWAStatus() {
+    async saveAllSettings() {
+      this.isSaving = true;
       try {
-        const res = await apiService.getWhatsAppStatus();
-        if (res.success) this.waData = res.data;
-      } catch (err) {
-        // Bot might not be initialized yet
-      }
-    },
-    async initWA() {
-      this.waLoading = true;
-      try {
-        const res = await apiService.initWhatsApp();
-        if (res.success) {
-          this.waData = res.data;
-          // Start polling for status updates
-          this.startWAPolling();
+        const keys = Object.keys(this.settings);
+        
+        // Use sequential saving to avoid database locks (Error 500)
+        for (const key of keys) {
+          await apiService.updateSetting(key, this.settings[key]);
         }
+        
+        // Dispatch event so other components (like Sidebar in App.vue) can update
+        window.dispatchEvent(new CustomEvent('settings-updated'));
+        
+        alert('Semua pengaturan berhasil disimpan!');
       } catch (err) {
-        alert('Gagal menginisialisasi WhatsApp Bot.');
+        console.error('Save error:', err);
+        alert('Gagal menyimpan pengaturan: ' + (err.response?.data?.error || err.message));
       } finally {
-        this.waLoading = false;
+        this.isSaving = false;
       }
     },
-    startWAPolling() {
-      if (this.waPolling) clearInterval(this.waPolling);
-      this.waPolling = setInterval(async () => {
-        await this.loadWAStatus();
-        if (this.waData.status === 'ready') {
-          clearInterval(this.waPolling);
-          this.waPolling = null;
-        }
-      }, 3000);
-    },
-    async sendTest() {
-      this.sending = true;
-      this.testResult = null;
-      try {
-        const res = await apiService.sendTestWhatsApp(this.testPhone, this.testMessage);
-        this.testResult = res;
-      } catch (err) {
-        this.testResult = { success: false, error: err.message };
-      } finally {
-        this.sending = false;
-      }
-    },
-    async logoutWA() {
-      if (!confirm('Logout WhatsApp Bot? Session akan dihapus.')) return;
-      try {
-        await apiService.logoutWhatsApp();
-        this.waData = { status: 'disconnected', qrCode: null };
-      } catch (err) {
-        alert('Gagal logout.');
-      }
-    },
-    async runInvoices() {
-      this.runningJob = 'invoices';
-      try {
-        const res = await apiService.runInvoiceGeneration();
-        alert(res.message || 'Selesai!');
-      } catch (err) {
-        alert('Gagal: ' + err.message);
-      } finally {
-        this.runningJob = null;
-      }
-    },
-    async runSuspend() {
-      if (!confirm('Jalankan auto-isolir sekarang?')) return;
-      this.runningJob = 'suspend';
-      try {
-        const res = await apiService.runAutoSuspend();
-        alert(res.message || 'Selesai!');
-      } catch (err) {
-        alert('Gagal: ' + err.message);
-      } finally {
-        this.runningJob = null;
-      }
-    }
+
   }
 };
 </script>
@@ -375,6 +220,34 @@ export default {
   border-radius: 8px;
   color: var(--text-primary);
   font-size: 13px;
+}
+
+.btn-wa-green {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-wa-green:hover { background: #059669; }
+.btn-wa-green:disabled { opacity: 0.7; cursor: not-allowed; }
+
+.loading-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 /* Toggle Switch */

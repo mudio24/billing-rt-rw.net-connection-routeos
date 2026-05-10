@@ -7,8 +7,8 @@
     <template v-else-if="currentUser.role === 'pelanggan'">
       <div class="app-container customer-view">
         <header class="portal-nav">
-          <div class="logo">MN</div>
-          <div class="portal-title">DIONIT CELL PORTAL</div>
+          <div class="logo">{{ companyName.charAt(0) || 'M' }}{{ companyName.split(' ')[1]?.charAt(0) || 'N' }}</div>
+          <div class="portal-title">{{ companyName }} PORTAL</div>
           <div class="spacer"></div>
           <div class="user-meta">
             <span>{{ currentUser.username }}</span>
@@ -40,10 +40,10 @@
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-header">
-        <div class="sidebar-logo">MN</div>
+        <div class="sidebar-logo">{{ companyName.charAt(0) || 'M' }}{{ companyName.split(' ')[1]?.charAt(0) || 'N' }}</div>
         <div class="sidebar-brand">
           <div class="sidebar-title">Mikrotik Manager</div>
-          <div class="sidebar-subtitle">DIONIT CELL</div>
+          <div class="sidebar-subtitle">{{ companyName }}</div>
         </div>
       </div>
       
@@ -66,27 +66,41 @@
           <span>Peta Jaringan</span>
         </div>
 
-        <!-- CRM & DUKUNGAN -->
+        <!-- PELANGGAN & LAYANAN -->
         <div class="sidebar-section-title" style="margin-top: 12px;">
-          <span>CRM & DUKUNGAN</span>
+          <span>PELANGGAN & LAYANAN</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
         </div>
         <div v-if="currentUser.role === 'admin'" class="sidebar-item" :class="{ active: activeTab === 'customers' }" @click="activeTab = 'customers'">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
           <span>Data Pelanggan</span>
         </div>
-        <div v-if="currentUser.role === 'admin'" class="sidebar-item" :class="{ active: activeTab === 'invoice' }" @click="activeTab = 'invoice'">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-          <span>Invoice Tagihan</span>
-        </div>
         <div v-if="currentUser.role === 'admin'" class="sidebar-item" :class="{ active: activeTab === 'packages' }" @click="activeTab = 'packages'">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
           <span>Paket Internet</span>
         </div>
+        <div v-if="currentUser.role === 'admin'" class="sidebar-item" :class="{ active: activeTab === 'invoice' }" @click="activeTab = 'invoice'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+          <span>Invoice Tagihan</span>
+        </div>
 
-        <!-- LAYANAN JARINGAN -->
+        <!-- KEUANGAN -->
+        <div v-if="currentUser.role === 'admin'" class="sidebar-section-title" style="margin-top: 12px;">
+          <span>KEUANGAN</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </div>
+        <div v-if="currentUser.role === 'admin'" class="sidebar-item" :class="{ active: activeTab === 'revenue' }" @click="activeTab = 'revenue'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <span>Pendapatan</span>
+        </div>
+        <div v-if="currentUser.role === 'admin'" class="sidebar-item" :class="{ active: activeTab === 'expenses' }" @click="activeTab = 'expenses'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 12H16c-.8 0-1.5.7-1.5 1.5v3c0 .8.7 1.5 1.5 1.5h5.5v-6zM14.5 12H3c-1.1 0-2 .9-2 2v4c0 1.1.9 2 2 2h11.5V12zM16 6.5h5.5c.8 0 1.5.7 1.5 1.5v3c0 .8-.7 1.5-1.5 1.5H16v-6zM3 4c0-1.1.9-2 2-2h11.5v6H3V4z"/></svg>
+          <span>Pengeluaran</span>
+        </div>
+
+        <!-- OPERASIONAL JARINGAN -->
         <div class="sidebar-section-title" style="margin-top: 12px;">
-          <span>LAYANAN JARINGAN</span>
+          <span>OPERASIONAL JARINGAN</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
         </div>
         <div class="sidebar-item" :class="{ active: activeTab === 'mikrotik' }" @click="activeTab = 'mikrotik'">
@@ -95,7 +109,15 @@
         </div>
         <div class="sidebar-item" :class="{ active: activeTab === 'pppoe' }" @click="activeTab = 'pppoe'">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-          <span>PPPoE Status (Tech)</span>
+          <span>PPPoE Status</span>
+        </div>
+        <div v-if="currentUser.role === 'admin'" class="sidebar-item" :class="{ active: activeTab === 'whatsapp' }" @click="activeTab = 'whatsapp'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+          <span>WhatsApp Gateway</span>
+        </div>
+        <div v-if="currentUser.role === 'admin'" class="sidebar-item" :class="{ active: activeTab === 'scheduler' }" @click="activeTab = 'scheduler'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Job Scheduler</span>
         </div>
 
         <!-- PENGATURAN -->
@@ -203,6 +225,22 @@
         <SystemSettings
           v-if="activeTab === 'settings'"
         />
+
+        <WhatsAppGateway
+          v-if="activeTab === 'whatsapp'"
+        />
+
+        <JobScheduler
+          v-if="activeTab === 'scheduler'"
+        />
+
+        <RevenueDashboard
+          v-if="activeTab === 'revenue'"
+        />
+
+        <ExpenseManagement
+          v-if="activeTab === 'expenses'"
+        />
       </main>
     </div>
 
@@ -252,6 +290,10 @@ import InvoiceManagement from './components/billing/InvoiceManagement.vue';
 import Login from './components/auth/Login.vue';
 import CustomerPortal from './components/portal/CustomerPortal.vue';
 import SystemSettings from './components/settings/SystemSettings.vue';
+import WhatsAppGateway from './components/whatsapp/WhatsAppGateway.vue';
+import JobScheduler from './components/settings/JobScheduler.vue';
+import RevenueDashboard from './components/billing/RevenueDashboard.vue';
+import ExpenseManagement from './components/billing/ExpenseManagement.vue';
 import { apiService } from '@/services/api';
 
 export default {
@@ -267,7 +309,11 @@ export default {
     InvoiceManagement,
     Login,
     CustomerPortal,
-    SystemSettings
+    SystemSettings,
+    WhatsAppGateway,
+    JobScheduler,
+    RevenueDashboard,
+    ExpenseManagement
   },
   data() {
     return {
@@ -286,7 +332,8 @@ export default {
       searchQuery: '',
       isLightMode: false,
       isLoggedIn: false,
-      currentUser: null
+      currentUser: null,
+      companyName: 'DIONIT CELL'
     };
   },
   computed: {
@@ -305,7 +352,9 @@ export default {
         customers: 'Data Pelanggan',
         packages: 'Paket Internet',
         mikrotik: 'Mikrotik Router',
-        pppoe: 'PPPoE Status (Tech)'
+        pppoe: 'PPPoE Status (Tech)',
+        revenue: 'Laporan Pendapatan',
+        expenses: 'Manajemen Pengeluaran'
       };
       return titles[this.activeTab] || 'Dashboard';
     }
@@ -319,6 +368,13 @@ export default {
     }
 
     await this.checkAuth();
+    await this.loadSettings();
+
+    // Listen for settings updates from other components
+    window.addEventListener('settings-updated', this.loadSettings);
+  },
+  unmounted() {
+    window.removeEventListener('settings-updated', this.loadSettings);
   },
   methods: {
     async checkAuth() {
@@ -370,6 +426,18 @@ export default {
       } catch (err) {
         console.error('Failed to load mikrotiks:', err);
         this.addToast('error', 'Gagal memuat data mikrotik');
+      }
+    },
+
+    async loadSettings() {
+      try {
+        const res = await apiService.getSettings();
+        if (res.success) {
+          const name = res.data.find(s => s.key === 'company_name')?.value;
+          if (name) this.companyName = name;
+        }
+      } catch (err) {
+        console.error('Failed to load settings:', err);
       }
     },
 

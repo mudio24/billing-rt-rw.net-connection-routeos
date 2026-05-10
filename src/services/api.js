@@ -128,6 +128,10 @@ export const apiService = {
     const res = await api.get('/packages');
     return res.data;
   },
+  getPackage: async (id) => {
+    const res = await api.get(`/packages/${id}`);
+    return res.data;
+  },
   syncPackagesFromMikrotik: async (routerId) => {
     const res = await api.post('/packages/sync-mikrotik', { router_id: routerId });
     return res.data;
@@ -182,8 +186,16 @@ export const apiService = {
     const res = await api.get(`/invoices${query ? '?' + query : ''}`);
     return res.data;
   },
+  getInvoice: async (id) => {
+    const res = await api.get(`/invoices/${id}`);
+    return res.data;
+  },
   generateInvoice: async (customerId) => {
     const res = await api.post('/invoices/generate', { customer_id: customerId });
+    return res.data;
+  },
+  generateInvoicesToday: async () => {
+    const res = await api.post('/invoices/generate-all');
     return res.data;
   },
   markInvoicePaid: async (id) => {
@@ -220,6 +232,18 @@ export const apiService = {
     const res = await api.post('/whatsapp/logout');
     return res.data;
   },
+  getWaTemplates: async () => {
+    const res = await api.get('/whatsapp/templates');
+    return res.data;
+  },
+  updateWaTemplate: async (id, data) => {
+    const res = await api.put(`/whatsapp/templates/${id}`, data);
+    return res.data;
+  },
+  sendWaBroadcast: async (data) => {
+    const res = await api.post('/whatsapp/broadcast', data);
+    return res.data;
+  },
 
   // ======== Scheduler ========
   runInvoiceGeneration: async () => {
@@ -242,6 +266,46 @@ export const apiService = {
   },
   updateSetting: async (key, value) => {
     const res = await api.put('/settings', { key, value });
+    return res.data;
+  },
+
+  // ======== Revenue ========
+  getRevenueSummary: async (from, to) => {
+    const res = await api.get('/revenue/summary', { params: { from, to } });
+    return res.data;
+  },
+  getRevenueDaily: async (from, to) => {
+    const res = await api.get('/revenue/daily', { params: { from, to } });
+    return res.data;
+  },
+  getRevenueByPackage: async (from, to) => {
+    const res = await api.get('/revenue/by-package', { params: { from, to } });
+    return res.data;
+  },
+  getRevenueByMethod: async (from, to) => {
+    const res = await api.get('/revenue/by-method', { params: { from, to } });
+    return res.data;
+  },
+  getRevenueTransactions: async (filters = {}) => {
+    const res = await api.get('/revenue/transactions', { params: filters });
+    return res.data;
+  },
+
+  // Expenses
+  getExpenses: async (params = {}) => {
+    const res = await api.get('/expenses', { params });
+    return res.data;
+  },
+  createExpense: async (data) => {
+    const res = await api.post('/expenses', data);
+    return res.data;
+  },
+  updateExpense: async (id, data) => {
+    const res = await api.put(`/expenses/${id}`, data);
+    return res.data;
+  },
+  deleteExpense: async (id) => {
+    const res = await api.delete(`/expenses/${id}`);
     return res.data;
   }
 };

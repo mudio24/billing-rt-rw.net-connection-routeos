@@ -15,6 +15,8 @@ const packagesRoutes = require('./routes/packages');
 const customersRoutes = require('./routes/customers');
 const invoicesRoutes = require('./routes/invoices');
 const whatsappRoutes = require('./routes/whatsapp');
+const revenueRoutes = require('./routes/revenue');
+const expensesRoutes = require('./routes/expenses');
 const { requireAuth, requireRole } = require('./middleware/auth');
 
 const app = express();
@@ -30,6 +32,7 @@ mikrotikService.on('connection-lost', async (data) => {
   // In a web app, we might use WebSockets to notify the client
   // For now, clients will see it on their next poll or refresh
 });
+
 
 // ============================================
 // API ROUTES
@@ -302,6 +305,8 @@ app.use('/api/packages', packagesRoutes);
 app.use('/api/customers', customersRoutes);
 app.use('/api/invoices', invoicesRoutes);
 app.use('/api/whatsapp', whatsappRoutes);
+app.use('/api/revenue', revenueRoutes);
+app.use('/api/expenses', expensesRoutes);
 
 // Settings API (admin only)
 app.get('/api/settings', requireAuth, requireRole('admin'), async (req, res) => {
@@ -346,6 +351,15 @@ app.get('/api/scheduler/status', requireAuth, requireRole('admin'), (req, res) =
   res.json({ success: true, data: billingScheduler.getStatus() });
 });
 
+app.post('/api/scheduler/reload', requireAuth, requireRole('admin'), async (req, res) => {
+  try {
+    await billingScheduler.reloadSchedules();
+    res.json({ success: true, message: 'Jadwal berhasil diperbarui dan direstart' });
+  } catch (err) {
+    res.json({ success: false, error: err.message });
+  }
+});
+
 // Dashboard Stats
 app.get('/api/billing/dashboard', requireAuth, async (req, res) => {
   try {
@@ -375,7 +389,7 @@ async function startServer() {
     console.log('[Server] Billing system initialized');
 
     // Initialize Billing Scheduler
-    billingScheduler.init(mikrotikService, whatsappBot.isReady ? whatsappBot : null);
+    await billingScheduler.init(mikrotikService, whatsappBot.isReady ? whatsappBot : null);
     console.log('[Server] Billing scheduler initialized');
 
     // Initialize WhatsApp Bot (optional - only if enabled)
